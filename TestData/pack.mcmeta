@@ -1,0 +1,14 @@
+{
+    "pack": {
+        "description": "Questo \u00e8 un test",
+        "pack_format": 15
+    },
+    "filter": {
+        "block": [
+            {
+                "namespace": "minecraft",
+                "path": "recipe/iron_ingot.json"
+            }
+        ]
+    }
+}

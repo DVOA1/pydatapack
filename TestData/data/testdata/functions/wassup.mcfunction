@@ -1,0 +1,1 @@
+tellraw @a {"text":"This function has no data inside", "color":"red"}
