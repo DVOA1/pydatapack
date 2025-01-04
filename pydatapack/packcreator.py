@@ -150,28 +150,37 @@ class Datapack:
                     fl.write(self.files[file]["data"])
         if self.verbose: print("End of save")
     
-    def def_load(self):
+    def def_load(self, data: str|None):
         if self.verbose: print("Defining all paths to load function")
         self._add_folders("minecraft\\tags\\functions")
         if self.verbose: print("Minecraft namespace paths created")
         self._add_folder(f"{self.namespace}\\functions")
         self.files["minecraft\\tags\\functions\\load.json"] = {"type":"json", "data":{"values":[f"{self.namespace}:load"]}}
-        self.files[f"{self.namespace}\\functions\\load.mcfunction"] = {"type":"text", "data":'tellraw @a {"text":"The '+self.name+' datapack has loaded correctly", "color":"green"}'}
+        if type(data) == None:
+            self.files[f"{self.namespace}\\functions\\load.mcfunction"] = {"type":"text", "data":'tellraw @a {"text":"The '+self.name+' datapack has loaded correctly", "color":"green"}'}
+        else:
+            self.files[f"{self.namespace}\\functions\\load.mcfunction"] = {"type":"text", "data":data}
         if self.verbose: print("All files created")
 
-    def def_tick(self):
+    def def_tick(self, data: str|None):
         if self.verbose: print("Defining all paths to tick function")
         self._add_folders("minecraft\\tags\\functions")
         if self.verbose: print("Minecraft namespace paths created")
         self._add_folder(f"{self.namespace}\\functions")
         self.files["minecraft\\tags\\functions\\tick.json"] = {"type":"json", "data":{"values":[f"{self.namespace}:tick"]}}
-        self.files[f"{self.namespace}\\functions\\tick.mcfunction"] = {"type":"text", "data":'tellraw @a "Tick!"'}
+        if type(data) == None:
+            self.files[f"{self.namespace}\\functions\\tick.mcfunction"] = {"type":"text", "data":'tellraw @a "Tick!"'}
+        else:
+            self.files[f"{self.namespace}\\functions\\tick.mcfunction"] = {"type":"text", "data":data}
         if self.verbose: print("All files created")
 
-    def def_func(self, name:str):
+    def def_func(self, name:str, data:str|None):
         if self.verbose: print("Defining new " + name + " function")
         if f"{self.namespace}\\functions" not in self.folders: 
             if self.verbose: print(self.namespace+ " namespace paths created")
             self._add_folder(f"{self.namespace}\\functions")
-        self.files[f"{self.namespace}\\functions\\{name}.mcfunction"] = {"type":"text", "data":'tellraw @a {"text":"This function has no data inside", "color":"red"}'}
+        if type(data) == None:
+            self.files[f"{self.namespace}\\functions\\{name}.mcfunction"] = {"type":"text", "data":'tellraw @a {"text":"This function has no data inside", "color":"red"}'}
+        else:
+            self.files[f"{self.namespace}\\functions\\{name}.mcfunction"] = {"type":"text", "data":data}
 
