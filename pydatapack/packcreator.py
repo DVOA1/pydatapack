@@ -32,6 +32,15 @@ def versionToPack(version:str):
                 values = [int(condition["val"][0]), int(condition["val"][1])]
                 if (version[1] >= values[0]) and (version[1] <= values[1]): return condition["ver"]
 
+class Tools:
+    def __init__(self, dtpk, namespace, files, folders, filters, verbose):
+        self.dtpk = dtpk
+        self.namespace = namespace
+        self.files = files
+        self.folders = folders
+        self.filters = filters
+        self.verbose = verbose
+
 class Recipe:
     def __init__(self, dtpk, namespace, files, folders, filters, verbose):
         self.dtpk = dtpk
