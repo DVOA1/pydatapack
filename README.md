@@ -101,10 +101,8 @@ Contains every ingredient with a set effect. [NOTE: Almost every item in the gam
 Parameters:
 
 - "essences": contains every essence that the set item will have
-    - ESSENCE_ID : weight
+    - ESSENCE_ID (USING "elixirum:" as namespace) : weight
 - "target": contains the item id
-
-EDIT: this seems to not work, for now the command `/elixirum essence set <target> <essence> <weight>` should do the trick
 
 The file name must be the item name.
 
@@ -134,7 +132,7 @@ test.def_load()
 test.elixirum.new_essence("farmersdelight:comfort", 3, 1200, "enhancing", 1, 10)
 
 # Creates a new preset ingredient with the following parameters (ESSENCE [can be string or list], INGREDIENT_ID, WEIGHT)
-test.elixirum.new_ingredient_preset("farmersdelight:comfort", "create:experience_nugget", 20)
+test.elixirum.new_ingredient_preset("elixirum:comfort", "create:experience_nugget", 20)
 
 # Generates the datapack
 test.save_data()
