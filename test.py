@@ -1,6 +1,6 @@
 import pydatapack as pdp
 
-test = pdp.Datapack("TestElixirum", "TEst for ars elixirum", 48, True)
+test = pdp.Datapack("TestElixirum", "TEst for ars elixirum", pdp.versionToPack("1.21.1"), True)
 
 test.def_load()
 

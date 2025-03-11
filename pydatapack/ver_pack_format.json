@@ -87,5 +87,30 @@
             }
         ]
         
+    },
+    "21":{
+        "any":false,
+        "conditions":[
+            {
+                "type":"less",
+                "val":1,
+                "ver":48
+            },
+            {
+                "type":"between",
+                "val":[2,3],
+                "ver":57
+            },
+            {
+                "type":"equal",
+                "val":4,
+                "ver":61
+            },
+            {
+                "type":"more",
+                "val":5,
+                "ver":68
+            }
+        ]
     }
 }
