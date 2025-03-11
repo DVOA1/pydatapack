@@ -90,9 +90,12 @@ class Elixirum:
         self.dtpk._add_folders("elixirum\\elixirum\\essence")
         self.dtpk.files[f"elixirum\\elixirum\\essence\\{essence}.json"] = {"type":"json", "data":{"category":category, "max_amplifier":max_ampl, "max_duration":max_dur, "mob_effect":effect, "required_ingredients":min_ingredient, "required_quality":min_quality}}
 
-    def new_ingredient_preset(self, essence:str, ingredient:str, duration:int):
+    def new_ingredient_preset(self, essence:str|list, ingredient:str, quality:int):
         self.dtpk._add_folders("elixirum\\elixirum\\ingredient_preset")
-        self.dtpk.files[f"elixirum\\elixirum\\ingredient_preset\\{ingredient.split(':').pop()}.json"] = {"type":"json", "data":{"essences": {essence: duration},"target": ingredient}}
+        if type(essence) == list:
+            for ess in essence: essences = {ess: quality}
+        else: essences = {essence: quality}
+        self.dtpk.files[f"elixirum\\elixirum\\ingredient_preset\\{ingredient.split(':').pop()}.json"] = {"type":"json", "data":{"essences": essences,"target": ingredient}}
 
 class Datapack:
     def __init__(self, name: str, desc: str, pack_format:str, verbose:bool=False):
