@@ -1,0 +1,8 @@
+{
+    "category": "enhancing",
+    "max_amplifier": 3,
+    "max_duration": 1200,
+    "mob_effect": "farmersdelight:comfort",
+    "required_ingredients": 1,
+    "required_quality": 1
+}

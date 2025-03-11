@@ -1,0 +1,1 @@
+tellraw @a {"text":"The TestElixirum datapack has loaded correctly", "color":"green"}
