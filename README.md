@@ -193,6 +193,10 @@ By default the compatible heat sources are the following:
 }
 ```
 
+Here is an example, i've added the create blaze burner as an heat source:
+
+![Blaze Burner under Glass Cauldron](/blaze_heat.png)
+
 ---
 
 <a id="pydatapack"></a>
@@ -205,7 +209,7 @@ import pydatapack as pdp
 # Creates a new datapack with the following parameters (NAME, DESC, PACK_FORMAT, VERBOSE_LOG)
 test = pdp.Datapack("TestElixirum", "Test for Ars Elixirum", 48, True)
 
-# Creates a generic load mcfunction
+# Creates a generic load mcfunction. Parameters (DATA [OPTIONAL])
 test.def_load()
 
 # Creates a new essence with the following parameters (EFFECT_ID, MAX_AMPLIFICATION, MAX_DURATION, CATEGORY, MIN_INGREDIENTS, MIN_QUALITY)
@@ -214,10 +218,13 @@ test.elixirum.new_essence("farmersdelight:comfort", 3, 1200, "enhancing", 1, 10)
 # Creates a new preset ingredient with the following parameters (ESSENCE [can be string or list], INGREDIENT_ID, WEIGHT)
 test.elixirum.new_ingredient_preset("elixirum:comfort", "create:experience_nugget", 20)
 
+# Adds the '#elixirum:heat_sources' tag to the block. Parameters (BLOCK_ID)
+test.elixirum.new_heat_source("create:blaze_burner")
+
 # Generates the datapack
 test.save_data()
 ```
 
-Tags will be added asap
+All tags will be added asap
 
 ##### DVOA1 | 2025

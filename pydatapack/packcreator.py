@@ -97,6 +97,10 @@ class Elixirum:
         else: essences = {essence: weight}
         self.dtpk.files[f"elixirum\\elixirum\\ingredient_preset\\{ingredient.split(':').pop()}.json"] = {"type":"json", "data":{"essences": essences,"target": ingredient}}
 
+    def new_heat_source(self, block_id: str):
+        self.dtpk._add_folders("elixirum\\tags\\block")
+        self.dtpk.files[f"elixirum\\tags\\block\\heat_sources.json"] = {"type":"json", "data":{"replace":False,"values":[block_id]}}
+
 class Datapack:
     def __init__(self, name: str, desc: str, pack_format:str, verbose:bool=False):
         self.verbose = verbose
