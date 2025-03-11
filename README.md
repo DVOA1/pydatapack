@@ -104,6 +104,8 @@ Parameters:
     - ESSENCE_ID : weight
 - "target": contains the item id
 
+EDIT: this seems to not work, for now the command `/elixirum essence set <target> <essence> <weight>` should do the trick
+
 The file name must be the item name.
 
 Template (taken from the mod code):
