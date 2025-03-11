@@ -131,7 +131,7 @@ test.def_load()
 # Creates a new essence with the following parameters (EFFECT_ID, MAX_AMPLIFICATION, MAX_DURATION, CATEGORY, MIN_INGREDIENTS, MIN_QUALITY)
 test.elixirum.new_essence("farmersdelight:comfort", 3, 1200, "enhancing", 1, 10)
 
-# Creates a new preset ingredient with the following parameters (ESSENCE [can be string or list], INGREDIENT_ID, QUALITY)
+# Creates a new preset ingredient with the following parameters (ESSENCE [can be string or list], INGREDIENT_ID, WEIGHT)
 test.elixirum.new_ingredient_preset("farmersdelight:comfort", "create:experience_nugget", 20)
 
 # Generates the datapack
