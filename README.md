@@ -6,11 +6,13 @@ To start you make a "elixirum" folder, referencing the mod. Inside you create an
 
 ```bash
 .
-└── elixirum/
-    ├── configured_elixir
-    ├── elixir_prefix
-    ├── essence
-    └── ingredient_preset
+└── data/
+    └── elixirum/
+        └── elixirum/
+            ├── configured_elixir
+            ├── elixir_prefix
+            ├── essence
+            └── ingredient_preset
 ```
 
 ## Configured Elixir folder
