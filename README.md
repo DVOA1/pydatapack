@@ -101,7 +101,7 @@ Contains every ingredient with a set effect. [NOTE: Almost every item in the gam
 Parameters:
 
 - "essences": contains every essence that the set item will have
-    - ESSENCE_ID : quality
+    - ESSENCE_ID : weight
 - "target": contains the item id
 
 The file name must be the item name.
