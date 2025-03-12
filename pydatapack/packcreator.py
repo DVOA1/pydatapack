@@ -1,14 +1,11 @@
 import json, os
 import pydatapack.pdpckerrors as errorrs
 
-with open(os.getcwd()+"\\pydatapack\\ver_pack_format.json", "r") as vpf:
-    ver_pack_format = json.load(vpf)
+with open(os.getcwd()+"\\pydatapack\\ver_pack_format.json", "r") as vpf: ver_pack_format = json.load(vpf)
 
 def makeDir(path):
-    try:
-        os.mkdir(path)
-    except FileExistsError:
-        return
+    try: os.mkdir(path)
+    except FileExistsError: return
 
 def versionToPack(version: str):
     version = [v for v in version.split(".") if v != "1"]
@@ -84,14 +81,33 @@ class Elixirum:
     def new_ingredient_preset(self, essence:str|list, ingredient:str, weight:int):
         self.dtpk._add_folders("elixirum\\elixirum\\ingredient_preset")
         essences = {}
-        if type(essence) == list:
+        if type(essence) == list: 
             for ess in essence: essences[ess] = weight
         else: essences[essence] = weight
         self.dtpk.files[f"elixirum\\elixirum\\ingredient_preset\\{ingredient.split(':').pop()}.json"] = {"type":"json", "data":{"essences": essences,"target": ingredient}}
 
-    def new_heat_source(self, block_id: str):
+    def new_heat_source(self, block: str|list):
         self.dtpk._add_folders("elixirum\\tags\\block")
-        self.dtpk.files[f"elixirum\\tags\\block\\heat_sources.json"] = {"type":"json", "data":{"replace":False,"values":[block_id]}}
+        if type(block) is not list: self.dtpk.files[f"elixirum\\tags\\block\\heat_sources.json"] = {"type":"json", "data":{"replace":False,"values":[block]}}
+        else: self.dtpk.files[f"elixirum\\tags\\block\\heat_sources.json"] = {"type":"json", "data":{"replace":False,"values":block}}
+
+    def add_to_blacklist(self, item: str|list):
+        self.dtpk._add_folders("elixirum\\tags\\item")
+        if type(item) is not list: self.dtpk.files[f"elixirum\\tags\\item\\essence_blacklist.json"] = {"type":"json", "data":{"replace":False,"values":[item]}}
+        else: self.dtpk.files[f"elixirum\\tags\\item\\essence_blacklist.json"] = {"type":"json", "data":{"replace":False,"values":item}}
+
+    def add_to_whitelist(self, item: str|list):
+        """
+        This tag seems to do nothing in the game, but it's here for completion
+        """
+        self.dtpk._add_folders("elixirum\\tags\\item")
+        if type(item) is not list: self.dtpk.files[f"elixirum\\tags\\item\\essence_whitelist.json"] = {"type":"json", "data":{"replace":False,"values":[item]}}
+        else: self.dtpk.files[f"elixirum\\tags\\item\\essence_whitelist.json"] = {"type":"json", "data":{"replace":False,"values":item}}
+
+    def make_shelf_placeable(self, item: str|list):
+        self.dtpk._add_folders("elixirum\\tags\\item")
+        if type(item) is not list: self.dtpk.files[f"elixirum\\tags\\item\\shelf_placeable.json"] = {"type":"json", "data":{"replace":False,"values":[item]}}
+        else: self.dtpk.files[f"elixirum\\tags\\item\\shelf_placeable.json"] = {"type":"json", "data":{"replace":False,"values":item}}
 
 class Datapack:
     def __init__(self, name: str, desc: str, pack_format:str, verbose:bool=False):

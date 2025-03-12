@@ -1,15 +1,12 @@
 # How to Make a Datapack for Ars Elixirum
 
-To start, create an `elixirum` folder, referencing the mod
----
+## Key Concepts
 
-### Index
+> NOTE: These key points are not the only things this guide provides. These are only the most important concepts to make more relevant things in the datapack.
 
-- [Essences](#add-essence)
+- [Adding Custom Essences](#add-essence)
 - [Tags](#tags)
-- [Pydatapack](#pydatapack)
-
----
+- [How to Use Pydatapack](#pydatapack)
 
 ## Folders Structure
 
@@ -157,7 +154,7 @@ Here's how:
 
 ### Filter Ingredients
 
-You can filter item to make them as blacklisted ingredients by adding the tag `#elixirum:essence_blacklist`.
+To add an item to the ingredient gen blacklist, you add the tag `#elixirum:essence_blacklist`.
 
 You can also add item to a whitelist by adding the tag `#elixirum:essence_whitelist`, though this doesn't seem to do anything.
 
@@ -220,13 +217,16 @@ test.elixirum.new_essence("farmersdelight:comfort", 3, 1200, "enhancing", 1, 10)
 # Creates a new preset ingredient with the following parameters (ESSENCE [can be string or list], INGREDIENT_ID, WEIGHT)
 test.elixirum.new_ingredient_preset("elixirum:comfort", "create:experience_nugget", 20)
 
-# Adds the '#elixirum:heat_sources' tag to the block. Parameters (BLOCK_ID)
+# Adds the '#elixirum:heat_sources' tag to the block. Parameters (BLOCK)
 test.elixirum.new_heat_source("create:blaze_burner")
+
+# You can also add the following tags with their respective methods:
+# - '#elixirum:essences_blacklist' : DATAPACK.elixirum.add_to_blacklist(ITEM)
+# - '#elixirum:essences_whitelist' : DATAPACK.elixirum.add_to_whitelist(ITEM)
+# - '#elixirum:potion_shelf_placeable' : DATAPACK.elixirum.make_shelf_placeable(ITEM)
 
 # Generates the datapack
 test.save_data()
 ```
-
-All tags will be added asap
 
 ##### DVOA1 | 2025
