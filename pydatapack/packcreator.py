@@ -92,9 +92,10 @@ class Elixirum:
 
     def new_ingredient_preset(self, essence:str|list, ingredient:str, weight:int):
         self.dtpk._add_folders("elixirum\\elixirum\\ingredient_preset")
+        essences = {}
         if type(essence) == list:
-            for ess in essence: essences = {ess: weight}
-        else: essences = {essence: weight}
+            for ess in essence: essences[ess] = weight
+        else: essences[essence] = weight
         self.dtpk.files[f"elixirum\\elixirum\\ingredient_preset\\{ingredient.split(':').pop()}.json"] = {"type":"json", "data":{"essences": essences,"target": ingredient}}
 
     def new_heat_source(self, block_id: str):
@@ -145,8 +146,7 @@ class Datapack:
         if self.verbose: print("Generating new pack...")
         makeDir(self.basepath)
         if self.verbose: print("Basepath generated")
-        with open(self.basepath+"\\pack.mcmeta", "w") as mcmeta:
-            json.dump({"pack":{"description":self.desc,"pack_format":self.pack_format}, "filter":self.filters}, mcmeta, indent=4)
+        with open(self.basepath+"\\pack.mcmeta", "w") as mcmeta: json.dump({"pack":{"description":self.desc,"pack_format":self.pack_format}, "filter":self.filters}, mcmeta, indent=4)
         if self.verbose: print("MCMETA generated")
         makeDir(self.datapath)
         if self.verbose: print("Datapath generated")
@@ -165,11 +165,9 @@ class Datapack:
         for file in self.files:
             if self.verbose: print("New file: " + file)
             if self.files[file]["type"] == "json":
-                with open(self.datapath+"\\"+file, "w") as fl:
-                    json.dump(self.files[file]["data"], fl, indent=4)
+                with open(self.datapath+"\\"+file, "w") as fl: json.dump(self.files[file]["data"], fl, indent=4)
             else:
-                with open(self.datapath+"\\"+file, "w") as fl:
-                    fl.write(self.files[file]["data"])
+                with open(self.datapath+"\\"+file, "w") as fl: fl.write(self.files[file]["data"])
         if self.verbose: print("End of save")
     
     def def_load(self, data: str|None = None):
@@ -178,10 +176,8 @@ class Datapack:
         if self.verbose: print("Minecraft namespace paths created")
         self._add_folder(f"{self.namespace}\\functions")
         self.files["minecraft\\tags\\functions\\load.json"] = {"type":"json", "data":{"values":[f"{self.namespace}:load"]}}
-        if data == None:
-            self.files[f"{self.namespace}\\functions\\load.mcfunction"] = {"type":"text", "data":'tellraw @a {"text":"The '+self.name+' datapack has loaded correctly", "color":"green"}'}
-        else:
-            self.files[f"{self.namespace}\\functions\\load.mcfunction"] = {"type":"text", "data":data}
+        if data == None: self.files[f"{self.namespace}\\functions\\load.mcfunction"] = {"type":"text", "data":'tellraw @a {"text":"The '+self.name+' datapack has loaded correctly", "color":"green"}'}
+        else: self.files[f"{self.namespace}\\functions\\load.mcfunction"] = {"type":"text", "data":data}
         if self.verbose: print("All files created")
 
     def def_tick(self, data: str|None = None):
@@ -190,10 +186,8 @@ class Datapack:
         if self.verbose: print("Minecraft namespace paths created")
         self._add_folder(f"{self.namespace}\\functions")
         self.files["minecraft\\tags\\functions\\tick.json"] = {"type":"json", "data":{"values":[f"{self.namespace}:tick"]}}
-        if data == None:
-            self.files[f"{self.namespace}\\functions\\tick.mcfunction"] = {"type":"text", "data":'tellraw @a "Tick!"'}
-        else:
-            self.files[f"{self.namespace}\\functions\\tick.mcfunction"] = {"type":"text", "data":data}
+        if data == None: self.files[f"{self.namespace}\\functions\\tick.mcfunction"] = {"type":"text", "data":'tellraw @a "Tick!"'}
+        else: self.files[f"{self.namespace}\\functions\\tick.mcfunction"] = {"type":"text", "data":data}
         if self.verbose: print("All files created")
 
     def def_func(self, name:str, data:str|None):
@@ -201,8 +195,5 @@ class Datapack:
         if f"{self.namespace}\\functions" not in self.folders: 
             if self.verbose: print(self.namespace+ " namespace paths created")
             self._add_folder(f"{self.namespace}\\functions")
-        if type(data) == None:
-            self.files[f"{self.namespace}\\functions\\{name}.mcfunction"] = {"type":"text", "data":'tellraw @a {"text":"This function has no data inside", "color":"red"}'}
-        else:
-            self.files[f"{self.namespace}\\functions\\{name}.mcfunction"] = {"type":"text", "data":data}
-
+        if type(data) == None: self.files[f"{self.namespace}\\functions\\{name}.mcfunction"] = {"type":"text", "data":'tellraw @a {"text":"This function has no data inside", "color":"red"}'}
+        else: self.files[f"{self.namespace}\\functions\\{name}.mcfunction"] = {"type":"text", "data":data}
