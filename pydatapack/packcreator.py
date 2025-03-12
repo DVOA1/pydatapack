@@ -10,27 +10,18 @@ def makeDir(path):
     except FileExistsError:
         return
 
-def versionToPack(version:str):
-    version = version.split(".")
-    version.remove("1")
+def versionToPack(version: str):
+    version = [v for v in version.split(".") if v != "1"]
     if len(version) == 1: version.append("0")
-    temp = ver_pack_format[version[0]]
-    if temp["any"]: return temp["val"]
-    else:
-        version = [int(i) for i in version]
-        for condition in temp["conditions"]:
-            if condition["type"] == "less":
-                value = int(condition["val"])
-                if version[1] <= value: return condition["ver"]
-            elif condition["type"] == "more":
-                value = int(condition["val"])
-                if version[1] >= value: return condition["ver"]
-            elif condition["type"] == "equal":
-                value = int(condition["val"])
-                if version[1] == value: return condition["ver"]
-            elif condition["type"] == "between":
-                values = [int(condition["val"][0]), int(condition["val"][1])]
-                if (version[1] >= values[0]) and (version[1] <= values[1]): return condition["ver"]
+    major, minor = int(version[0]), int(version[1])
+    temp = ver_pack_format.get(str(major))
+    if temp and temp["any"]: return temp["val"]
+    for condition in temp["conditions"]:
+        value = int(condition["val"])
+        if condition["type"] == "less" and minor <= value: return condition["ver"]
+        elif condition["type"] == "more" and minor >= value: return condition["ver"]
+        elif condition["type"] == "equal" and minor == value: return condition["ver"]
+        elif condition["type"] == "between" and value[0] <= minor <= value[1]: return condition["ver"]
 
 class Recipe:
     def __init__(self, dtpk, namespace, files, folders, filters, verbose):
