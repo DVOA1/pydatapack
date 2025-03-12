@@ -1,1 +1,1 @@
-from pydatapack.packcreator import Datapack, versionToPack
+from pydatapack.packcreator import Datapack, version_to_pack

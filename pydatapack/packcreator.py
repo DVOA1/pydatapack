@@ -35,7 +35,7 @@ class Recipe:
         self.verbose = verbose
         self.dir_made = False
 
-    def _new_recipe_folder(self):
+    def __new_recipe_folder(self):
         '''
         ### Creates a new recipe folder
 
@@ -46,13 +46,13 @@ class Recipe:
         if self.dir_made: return
         self.folders.append(os.path.join(self.namespace, "recipe"))
         self.dir_made = True
-    
+
     def shaped(self, output:str|dict, pattern:list|tuple, inputs:dict):
         if isinstance(output, dict):
             count = output["count"]
             output = output["id"]
         else: count = 1
-        self._new_recipe_folder()
+        self.__new_recipe_folder()
         data = {"type":"minecraft:crafting_shaped","pattern":pattern, "key":inputs, "result":{"id":output, "count":count}}
         self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
 
@@ -61,8 +61,8 @@ class Recipe:
             count = output["count"]
             output = output["id"]
         else: count = 1
+        self.__new_recipe_folder()
         if len(inputs) > 9: raise errorrs.RecipeOutOfSlots
-        self._new_recipe_folder()
         data = {"type":"minecraft:crafting_shapeless", "ingredients":inputs, "result":{"id":output, "count":count}}
         self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
 
@@ -79,11 +79,11 @@ class Elixirum:
         self.__version__ = "0.2.2"
     
     def new_essence(self, effect:str, max_ampl:int, max_dur:int, category:str, min_ingredient: int, min_quality: int):
-        self.dtpk.__add_folders(os.path.join("elixirum","elixirum","essence"))
+        self.dtpk._add_folders(os.path.join("elixirum","elixirum","essence"))
         self.dtpk.files[os.path.join("elixirum","elixirum","essence", f"{effect.split(':')[-1]}.json")] = {"type":"json", "data":{"category":category, "max_amplifier":max_ampl, "max_duration":max_dur, "mob_effect":effect, "required_ingredients":min_ingredient, "required_quality":min_quality}}
 
     def new_ingredient_preset(self, essence:str|list, ingredient:str, weight:int):
-        self.dtpk.__add_folders(os.path.join("elixirum","elixirum","ingredient_preset"))
+        self.dtpk._add_folders(os.path.join("elixirum","elixirum","ingredient_preset"))
         essences = {}
         if isinstance(essence, list): 
             for ess in essence: essences[ess] = weight
@@ -91,13 +91,13 @@ class Elixirum:
         self.dtpk.files[os.path.join("elixirum","elixirum","ingredient_preset", f"{ingredient.split(':')[-1]}.json")] = {"type":"json", "data":{"essences": essences,"target": ingredient}}
 
     def new_configured_elixir(self, data:dict):
-        self.dtpk.__add_folders(os.path.join("elixirum","elixirum","configured_elixir"))
-        self.dtpk.files[os.path.join("elixirum","elixirum","configured_elixir", f"{data['variants'][0][0]["essence"].removeprefix("elixirum:")}.json")] = {"type":"json", "data":data}
+        self.dtpk._add_folders(os.path.join("elixirum","elixirum","configured_elixir"))
+        self.dtpk.files[os.path.join("elixirum","elixirum","configured_elixir", f"{data['variants'][0][0]['essence'].removeprefix('elixirum:')}.json")] = {"type":"json", "data":data}
 
     def __add_tag(self, tag:str, tag_type:str, id:str|list):
-        self.dtpk.__add_folders(os.path.join("elixirum","tags",tag_type))
-        if not isinstance(id, list): self.dtpk.files[os.path.join("elixirum","tags","tag_type", f"{tag}.json")] = {"type":"json", "data":{"replace":False,"values":[id]}}
-        else: self.dtpk.files[os.path.join("elixirum","tags","tag_type", f"{tag}.json")] = {"type":"json", "data":{"replace":False,"values":id}}
+        self.dtpk._add_folders(os.path.join("elixirum","tags",tag_type))
+        if not isinstance(id, list): self.dtpk.files[os.path.join("elixirum","tags", tag_type, f"{tag}.json")] = {"type":"json", "data":{"replace":False,"values":[id]}}
+        else: self.dtpk.files[os.path.join("elixirum","tags", tag_type, f"{tag}.json")] = {"type":"json", "data":{"replace":False,"values":id}}
     
     def new_heat_source(self, block: str|list): self.__add_tag("heat_sources", "block", block)
 
@@ -127,7 +127,7 @@ class Datapack:
         self.recipes = Recipe(self, self.namespace, self.files, self.folders, self.filters, verbose)
         self.elixirum = Elixirum(self)
 
-    def __add_folder(self, name:str):
+    def _add_folder(self, name:str):
         '''
         Used internally
 
@@ -137,25 +137,27 @@ class Datapack:
         if name in self.folders: return
         self.folders.append(name)
 
-    def __add_folders(self, path:str):
+    def _add_folders(self, path:str):
         '''
         Used internally
 
-        Same as __add_folder but for a long *INEXISTENT* path\n
+        Same as _add_folder but for a long *INEXISTENT* path\n
         If it exists returns
         '''
-        path = path.split(os.pathsep)
-        complex_path = path[0]
+        path = path.split(os.sep)
+        complex_path = ""
         for i in range(len(path)):
-            self.__add_folder(complex_path)
             complex_path = os.path.join(complex_path, path[i])
+            self._add_folder(complex_path)
 
     def gen_new(self):
         if self.verbose: print("Generating new pack...")
-        self.__add_folders(self.datapath)
-        if self.verbose: print("Datapack folder generated")
+        make_dir(self.basepath)
+        if self.verbose: print("Basepath generated")
         with open(os.path.join(self.basepath, "pack.mcmeta"), "w") as mcmeta: json.dump({"pack":{"description":self.desc,"pack_format":self.pack_format}, "filter":self.filters}, mcmeta, indent=4)
         if self.verbose: print("MCMETA generated")
+        make_dir(self.datapath)
+        if self.verbose: print("Datapath generated")
 
     def save_data(self):
         if self.verbose: print("Saving datapack...")
@@ -165,7 +167,7 @@ class Datapack:
             return
         
         for folder in self.folders:
-            if self.verbose: print("New folder: " + folder)
+            if self.verbose: print("New folder: ", os.path.join(self.datapath,folder))
             make_dir(os.path.join(self.datapath,folder))
 
         if len(self.files) == 0: 
@@ -173,8 +175,8 @@ class Datapack:
             return
         
         for file in self.files:
-            if self.verbose: print("New file: " + file)
-            with open(os.path.join(self.datapath,file), "w") as fl:
+            if self.verbose: print("New file: ", file)
+            with open(os.path.join(self.datapath, file), "w") as fl:
                 if self.files[file]["type"] == "json": json.dump(self.files[file]["data"], fl, indent=4)
                 else: fl.write(self.files[file]["data"])
 
@@ -182,10 +184,10 @@ class Datapack:
     
     def def_load(self, data: str|None = None):
         if self.verbose: print("Defining all paths to load function")
-        self.__add_folders(os.path.join("minecraft","tags","functions"))
+        self._add_folders(os.path.join("minecraft","tags","functions"))
 
         if self.verbose: print("Minecraft namespace paths created")
-        self.__add_folder(os.path.join(self.namespace, "functions"))
+        self._add_folders(os.path.join(self.namespace, "functions"))
         self.files[os.path.join("minecraft", "tags", "functions", "load.json")] = {"type":"json", "data":{"values":[f"{self.namespace}:load"]}}
 
         if data == None: self.files[os.path.join(self.namespace, "functions", "load.mcfunction")] = {"type":"text", "data":'tellraw @a {"text":"The '+self.name+' datapack has loaded correctly", "color":"green"}'}
@@ -195,10 +197,10 @@ class Datapack:
 
     def def_tick(self, data: str|None = None):
         if self.verbose: print("Defining all paths to tick function")
-        self.__add_folders(os.path.join("minecraft","tags","functions"))
+        self._add_folders(os.path.join("minecraft","tags","functions"))
 
         if self.verbose: print("Minecraft namespace paths created")
-        self.__add_folder(os.path.join(self.namespace, "functions"))
+        self._add_folders(os.path.join(self.namespace, "functions"))
         self.files[os.path.join("minecraft","tags","functions","tick.json")] = {"type":"json", "data":{"values":[f"{self.namespace}:tick"]}}
 
         if data == None: self.files[os.path.join(self.namespace, "functions", "tick.mcfunction")] = {"type":"text", "data":'tellraw @a "Tick!"'}
@@ -211,7 +213,7 @@ class Datapack:
 
         if os.path.join(self.namespace, "functions") not in self.folders: 
             if self.verbose: print(self.namespace+ " namespace paths created")
-            self.__add_folder(os.path.join(self.namespace, "functions"))
+            self._add_folder(os.path.join(self.namespace, "functions"))
 
         if data == None: self.files[os.path.join(self.namespace, "functions", f"{name}.mcfunction")] = {"type":"text", "data":'tellraw @a {"text":"This function has no data inside", "color":"red"}'}
         else: self.files[os.path.join(self.namespace, "functions", f"{name}.mcfunction")] = {"type":"text", "data":data}
