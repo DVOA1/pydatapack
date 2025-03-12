@@ -54,7 +54,7 @@ class Recipe:
         else: count = 1
         self._new_recipe_folder()
         data = {"type":"minecraft:crafting_shaped","pattern":pattern, "key":inputs, "result":{"id":output, "count":count}}
-        self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(":")[-1])}.json")] = {"type":"json", "data":data}
+        self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
 
     def shapeless(self, output:str|dict, inputs:list|tuple):
         if isinstance(output, dict):
@@ -64,7 +64,7 @@ class Recipe:
         if len(inputs) > 9: raise errorrs.RecipeOutOfSlots
         self._new_recipe_folder()
         data = {"type":"minecraft:crafting_shapeless", "ingredients":inputs, "result":{"id":output, "count":count}}
-        self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(":")[-1])}.json")] = {"type":"json", "data":data}
+        self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
 
     def remove(self, output: str):
         namespace, itemid = output.split(':')
@@ -80,7 +80,7 @@ class Elixirum:
     
     def new_essence(self, effect:str, max_ampl:int, max_dur:int, category:str, min_ingredient: int, min_quality: int):
         self.dtpk.__add_folders(os.path.join("elixirum","elixirum","essence"))
-        self.dtpk.files[os.path.join("elixirum","elixirum","essence", f"{effect.split(":")[-1]}.json")] = {"type":"json", "data":{"category":category, "max_amplifier":max_ampl, "max_duration":max_dur, "mob_effect":effect, "required_ingredients":min_ingredient, "required_quality":min_quality}}
+        self.dtpk.files[os.path.join("elixirum","elixirum","essence", f"{effect.split(':')[-1]}.json")] = {"type":"json", "data":{"category":category, "max_amplifier":max_ampl, "max_duration":max_dur, "mob_effect":effect, "required_ingredients":min_ingredient, "required_quality":min_quality}}
 
     def new_ingredient_preset(self, essence:str|list, ingredient:str, weight:int):
         self.dtpk.__add_folders(os.path.join("elixirum","elixirum","ingredient_preset"))
@@ -88,7 +88,7 @@ class Elixirum:
         if isinstance(essence, list): 
             for ess in essence: essences[ess] = weight
         else: essences[essence] = weight
-        self.dtpk.files[os.path.join("elixirum","elixirum","ingredient_preset", f"{ingredient.split(":")[-1]}.json")] = {"type":"json", "data":{"essences": essences,"target": ingredient}}
+        self.dtpk.files[os.path.join("elixirum","elixirum","ingredient_preset", f"{ingredient.split(':')[-1]}.json")] = {"type":"json", "data":{"essences": essences,"target": ingredient}}
 
     def new_configured_elixir(self, data:dict):
         self.dtpk.__add_folders(os.path.join("elixirum","elixirum","configured_elixir"))
