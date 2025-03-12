@@ -204,8 +204,8 @@ Here is an example, i've added the create blaze burner as an heat source:
 import pydatapack as pdp
 
 # Creates a new datapack with the following parameters (NAME, DESC, PACK_FORMAT, VERBOSE_LOG)
-# You can also use pdp.versionToPack(VERSION) to automatically get the correct pack_format
-# (E.G pdp.versionToPack("1.21.1") => 48)
+# You can also use pdp.version_to_pack(VERSION) to automatically get the correct pack_format
+# (E.G pdp.version_to_pack("1.21.1") => 48)
 test = pdp.Datapack("TestElixirum", "Test for Ars Elixirum", 48, True)
 
 # Creates a generic load mcfunction. Parameters (DATA [OPTIONAL])
