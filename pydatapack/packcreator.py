@@ -1,7 +1,7 @@
 import json, os
-import pydatapack.pdpckerrors as errorrs
 
 with open(os.path.join(os.getcwd(), "pydatapack", "ver_pack_format.json") , "r") as vpf: ver_pack_format = json.load(vpf)
+with open(os.path.join(os.getcwd(), "pydatapack", "original_files.json") , "r") as vpf: original_files = json.load(vpf)
 
 def make_dir(path):
     try: os.mkdir(path)
@@ -62,7 +62,7 @@ class Recipe:
             output = output["id"]
         else: count = 1
         self.__new_recipe_folder()
-        if len(inputs) > 9: raise errorrs.RecipeOutOfSlots
+        if len(inputs) > 9: raise ValueError("The maximum amount of inputs is 9")
         data = {"type":"minecraft:crafting_shapeless", "ingredients":inputs, "result":{"id":output, "count":count}}
         self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
 
@@ -77,6 +77,8 @@ class Elixirum:
     def __init__(self, dtpk):
         self.dtpk = dtpk
         self.__version__ = "0.2.2"
+        self.__all_tags = []
+        self.__removed_tags = []
     
     def new_essence(self, effect:str, max_ampl:int, max_dur:int, category:str, min_ingredient: int, min_quality: int):
         self.dtpk._add_folders(os.path.join("elixirum","elixirum","essence"))
@@ -94,20 +96,43 @@ class Elixirum:
         self.dtpk._add_folders(os.path.join("elixirum","elixirum","configured_elixir"))
         self.dtpk.files[os.path.join("elixirum","elixirum","configured_elixir", f"{data['variants'][0][0]['essence'].removeprefix('elixirum:')}.json")] = {"type":"json", "data":data}
 
-    def __add_tag(self, tag:str, tag_type:str, id:str|list):
+    def __add_tag(self, tag:str, tag_type:str, id:str|list, replace:bool=False):
         self.dtpk._add_folders(os.path.join("elixirum","tags",tag_type))
-        if not isinstance(id, list): self.dtpk.files[os.path.join("elixirum","tags", tag_type, f"{tag}.json")] = {"type":"json", "data":{"replace":False,"values":[id]}}
-        else: self.dtpk.files[os.path.join("elixirum","tags", tag_type, f"{tag}.json")] = {"type":"json", "data":{"replace":False,"values":id}}
+        if not isinstance(id, list): self.dtpk.files[os.path.join("elixirum","tags", tag_type, f"{tag}.json")] = {"type":"json", "data":{"replace":replace,"values":[id]}}
+        else: self.dtpk.files[os.path.join("elixirum","tags", tag_type, f"{tag}.json")] = {"type":"json", "data":{"replace":replace,"values":id}}
     
-    # TODO: Make new tag function stack the tags in the same file
+    def _confirm_tags(self):
+        if len(self.__all_tags) > 0:
+            tags = ["heat_sources", "essence_blacklist", "essence_whitelist", "shelf_placeable"]
 
-    def new_heat_source(self, block: str|list): self.__add_tag("heat_sources", "block", block)
-
-    def add_to_blacklist(self, item: str|list): self.__add_tag("essence_blacklist", "item", item)
-
-    def add_to_whitelist(self, item: str|list): self.__add_tag("essence_whitelist", "item", item)
+            blacklist = original_files["essence_blacklist.json"]["values"]
+            for id in self.__removed_tags:
+                blacklist.remove(id)
+            self.__all_tags.append({"tag":"essence_blacklist", "type":"item", "id":blacklist, "replace":True})
+            print(self.__all_tags)
+            for t in tags:
+                tags_id, replace = [], []
+                for tag in self.__all_tags:
+                    if tag["tag"] == t: 
+                        if isinstance(tag["id"], list): tags_id.extend(tag["id"])
+                        else: tags_id.append(tag["id"])
+                        replace.append(tag["replace"])
+                if len(tags_id) > 0: self.__add_tag(t, tag["type"], tags_id, any(replace))
+    
+    def __append_tag(self, tag: str, tag_type: str, id: str | list):
+        if tag == "essence_whitelist":
+            ids = id if isinstance(id, list) else [id]
+            self.__removed_tags.extend(i for i in ids if i in original_files["essence_blacklist.json"]["values"])
         
-    def make_shelf_placeable(self, item: str|list): self.__add_tag("shelf_placeable", "item", item)
+        self.__all_tags.append({"tag": tag, "type": tag_type, "id": id, "replace": False})
+
+    def new_heat_source(self, block: str|list): self.__append_tag("heat_sources", "block", block)
+
+    def add_to_blacklist(self, item: str|list): self.__append_tag("essence_blacklist", "item", item)
+
+    def add_to_whitelist(self, item: str|list): self.__append_tag("essence_whitelist", "item", item)
+        
+    def make_shelf_placeable(self, item: str|list): self.__append_tag("shelf_placeable", "item", item)
         
 class Datapack:
     def __init__(self, name: str, desc: str, pack_format:str, verbose:bool=False):
@@ -159,6 +184,9 @@ class Datapack:
 
     def save_data(self):
         if self.verbose: print("Saving datapack...")
+
+        if self.verbose: print("Confirming elixirum tags...")
+        self.elixirum._confirm_tags()
 
         if len(self.folders) == 0:
             if self.verbose: print("No folders to generate! Returning...")

@@ -10,6 +10,8 @@ test.elixirum.new_ingredient_preset("elixirum:comfort", "create:experience_nugge
 
 test.elixirum.add_to_blacklist("minecraft:redstone")
 
+test.elixirum.add_to_whitelist("minecraft:bucket")
+
 test.elixirum.add_to_whitelist("minecraft:water_bucket")
 
 test.save_data()
