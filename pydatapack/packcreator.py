@@ -99,15 +99,13 @@ class Elixirum:
         if not isinstance(id, list): self.dtpk.files[os.path.join("elixirum","tags", tag_type, f"{tag}.json")] = {"type":"json", "data":{"replace":False,"values":[id]}}
         else: self.dtpk.files[os.path.join("elixirum","tags", tag_type, f"{tag}.json")] = {"type":"json", "data":{"replace":False,"values":id}}
     
+    # TODO: Make new tag function stack the tags in the same file
+
     def new_heat_source(self, block: str|list): self.__add_tag("heat_sources", "block", block)
 
     def add_to_blacklist(self, item: str|list): self.__add_tag("essence_blacklist", "item", item)
 
-    def add_to_whitelist(self, item: str|list):
-        """
-        This tag seems to do nothing in the game, but it's here for completion
-        """
-        self.__add_tag("essence_whitelist", "item", item)
+    def add_to_whitelist(self, item: str|list): self.__add_tag("essence_whitelist", "item", item)
         
     def make_shelf_placeable(self, item: str|list): self.__add_tag("shelf_placeable", "item", item)
         
