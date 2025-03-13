@@ -156,7 +156,9 @@ Here's how:
 
 To add an item to the ingredient gen blacklist, you add the tag `#elixirum:essence_blacklist`.
 
-You can also add item to a whitelist by adding the tag `#elixirum:essence_whitelist`, though this doesn't seem to do anything.
+You can also add item to a whitelist by adding the tag `#elixirum:essence_whitelist`.
+
+Both of these don't seem to do anything.
 
 ---
 
