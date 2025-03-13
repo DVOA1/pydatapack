@@ -1,13 +1,16 @@
 import json, os
 
+# Load version pack format and original files from JSON files
 with open(os.path.join(os.getcwd(), "pydatapack", "ver_pack_format.json") , "r") as vpf: ver_pack_format = json.load(vpf)
 with open(os.path.join(os.getcwd(), "pydatapack", "original_files.json") , "r") as vpf: original_files = json.load(vpf)
 
 def make_dir(path):
+    # Create a directory if it doesn't exist
     try: os.mkdir(path)
     except FileExistsError: return
 
 def version_to_pack(version: str):
+    # Convert version string to pack format
     version = [v for v in version.split(".") if v != "1"]
     if len(version) == 1: version.append("0")
     major, minor = int(version[0]), int(version[1])
@@ -27,6 +30,7 @@ def version_to_pack(version: str):
 
 class Recipe:
     def __init__(self, dtpk, namespace, files, folders, filters, verbose):
+        # Initialize Recipe class
         self.dtpk = dtpk
         self.namespace = namespace
         self.files = files
@@ -48,6 +52,7 @@ class Recipe:
         self.dir_made = True
 
     def shaped(self, output:str|dict, pattern:list|tuple, inputs:dict):
+        # Create a shaped recipe
         if isinstance(output, dict):
             count = output["count"]
             output = output["id"]
@@ -56,17 +61,65 @@ class Recipe:
         data = {"type":"minecraft:crafting_shaped","pattern":pattern, "key":inputs, "result":{"id":output, "count":count}}
         self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
 
-    def shapeless(self, output:str|dict, inputs:list|tuple):
+    def __get_count(self, output:str|dict):
+        # Get count from output
         if isinstance(output, dict):
             count = output["count"]
             output = output["id"]
         else: count = 1
+        return output, count
+
+    def shapeless(self, output:str|dict, inputs:list|tuple):
+        # Create a shapeless recipe
+        output, count = self.__get_count(output)
         self.__new_recipe_folder()
         if len(inputs) > 9: raise ValueError("The maximum amount of inputs is 9")
         data = {"type":"minecraft:crafting_shapeless", "ingredients":inputs, "result":{"id":output, "count":count}}
         self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
+    
+    def __smelting(self, output:str|dict, input:str|dict, xp:float, cookingtime:int, recipe_type:str):
+        # Create a smelting recipe
+        output, count = self.__get_count(output)
+        if isinstance(input, dict): input = input["id"]
+        self.__new_recipe_folder()
+        data = {"type":recipe_type,"ingredient":{"item":input},"result":{"item":output,"count":count},"experience":xp,"cookingtime":cookingtime}
+        self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
+
+    def smelting(self, output:str|dict, input:str|dict, xp:float, cookingtime:int): 
+        # Create a smelting recipe
+        self.__smelting(output, input, xp, cookingtime, "minecraft:smelting")
+
+    def blasting(self, output:str|dict, input:str|dict, xp:float, cookingtime:int): 
+        # Create a blasting recipe
+        self.__smelting(output, input, xp, cookingtime, "minecraft:blasting")
+
+    def smoking(self, output:str|dict, input:str|dict, xp:float, cookingtime:int): 
+        # Create a smoking recipe
+        self.__smelting(output, input, xp, cookingtime, "minecraft:smoking")
+
+    def campfire_cooking(self, output:str|dict, input:str|dict, xp:float, cookingtime:int): 
+        # Create a campfire cooking recipe
+        self.__smelting(output, input, xp, cookingtime, "minecraft:campfire_cooking")
+
+    def stonecutting(self, output:str|dict, input:str|dict):
+        # Create a stonecutting recipe
+        output, count = self.__get_count(output)
+        if isinstance(input, dict): input = input["id"]
+        self.__new_recipe_folder()
+        data = {"type":"minecraft:stonecutting","ingredient":input,"result":output,"count":count}
+        self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
+    
+    def smithing(self, base:str|dict, addition:str|dict, output:str|dict):
+        # Create a smithing recipe
+        if isinstance(base, dict): base = base["id"]
+        if isinstance(addition, dict): addition = addition["id"]
+        output, count = self.__get_count(output)
+        self.__new_recipe_folder()
+        data = {"type":"minecraft:smithing","base":base,"addition":addition,"result":{"item":output,"count":count}}
+        self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
 
     def remove(self, output: str):
+        # Remove a recipe
         namespace, itemid = output.split(':')
         if self.verbose: print(f"The recipe in namespace {namespace} of {itemid} has been removed")
         self.filters["block"] = [{"namespace":namespace,"path":f"recipe/{itemid}.json"}]
@@ -75,67 +128,87 @@ class Recipe:
 
 class Elixirum:
     def __init__(self, dtpk):
+        # Initialize Elixirum class
         self.dtpk = dtpk
         self.__version__ = "0.2.2"
         self.__all_tags = []
         self.__removed_tags = []
     
     def new_essence(self, effect:str, max_ampl:int, max_dur:int, category:str, min_ingredient: int, min_quality: int):
+        # Create a new essence
+        category = category.lower()
+        if category not in ["none", "offensive", "defensive", "enhancing", "diminishing"]: category = "none"
         self.dtpk._add_folders(os.path.join("elixirum","elixirum","essence"))
         self.dtpk.files[os.path.join("elixirum","elixirum","essence", f"{effect.split(':')[-1]}.json")] = {"type":"json", "data":{"category":category, "max_amplifier":max_ampl, "max_duration":max_dur, "mob_effect":effect, "required_ingredients":min_ingredient, "required_quality":min_quality}}
 
     def new_ingredient_preset(self, essence:str|list, ingredient:str, weight:int):
+        # Create a new ingredient preset
         self.dtpk._add_folders(os.path.join("elixirum","elixirum","ingredient_preset"))
         essences = {}
+
         if isinstance(essence, list): 
             for ess in essence: essences[ess] = weight
         else: essences[essence] = weight
         self.dtpk.files[os.path.join("elixirum","elixirum","ingredient_preset", f"{ingredient.split(':')[-1]}.json")] = {"type":"json", "data":{"essences": essences,"target": ingredient}}
 
     def new_configured_elixir(self, data:dict):
+        # Create a new configured elixir
         self.dtpk._add_folders(os.path.join("elixirum","elixirum","configured_elixir"))
         self.dtpk.files[os.path.join("elixirum","elixirum","configured_elixir", f"{data['variants'][0][0]['essence'].removeprefix('elixirum:')}.json")] = {"type":"json", "data":data}
 
     def __add_tag(self, tag:str, tag_type:str, id:str|list, replace:bool=False):
+        # Add a tag
         self.dtpk._add_folders(os.path.join("elixirum","tags",tag_type))
         if not isinstance(id, list): self.dtpk.files[os.path.join("elixirum","tags", tag_type, f"{tag}.json")] = {"type":"json", "data":{"replace":replace,"values":[id]}}
         else: self.dtpk.files[os.path.join("elixirum","tags", tag_type, f"{tag}.json")] = {"type":"json", "data":{"replace":replace,"values":id}}
     
     def _confirm_tags(self):
-        if len(self.__all_tags) > 0:
-            tags = ["heat_sources", "essence_blacklist", "essence_whitelist", "shelf_placeable"]
+        # Confirm tags
+        if not (len(self.__all_tags) > 0): return
 
-            blacklist = original_files["essence_blacklist.json"]["values"]
-            for id in self.__removed_tags:
-                blacklist.remove(id)
-            self.__all_tags.append({"tag":"essence_blacklist", "type":"item", "id":blacklist, "replace":True})
-            print(self.__all_tags)
-            for t in tags:
-                tags_id, replace = [], []
-                for tag in self.__all_tags:
-                    if tag["tag"] == t: 
-                        if isinstance(tag["id"], list): tags_id.extend(tag["id"])
-                        else: tags_id.append(tag["id"])
-                        replace.append(tag["replace"])
-                if len(tags_id) > 0: self.__add_tag(t, tag["type"], tags_id, any(replace))
+        tags = ["heat_sources", "essence_blacklist", "essence_whitelist", "shelf_placeable"]
+
+        blacklist = original_files["essence_blacklist.json"]["values"]
+        for id in self.__removed_tags:
+            blacklist.remove(id)
+        self.__all_tags.append({"tag":"essence_blacklist", "type":"item", "id":blacklist, "replace":True})
+        print(self.__all_tags)
+        for t in tags:
+            tags_id, replace = [], []
+            for tag in self.__all_tags:
+                if tag["tag"] == t: 
+                    if isinstance(tag["id"], list): tags_id.extend(tag["id"])
+                    else: tags_id.append(tag["id"])
+                    replace.append(tag["replace"])
+            if len(tags_id) > 0: self.__add_tag(t, tag["type"], tags_id, any(replace))
     
     def __append_tag(self, tag: str, tag_type: str, id: str | list):
+        # Append a tag
         if tag == "essence_whitelist":
             ids = id if isinstance(id, list) else [id]
             self.__removed_tags.extend(i for i in ids if i in original_files["essence_blacklist.json"]["values"])
         
         self.__all_tags.append({"tag": tag, "type": tag_type, "id": id, "replace": False})
 
-    def new_heat_source(self, block: str|list): self.__append_tag("heat_sources", "block", block)
+    def new_heat_source(self, block: str|list): 
+        # Add a new heat source
+        self.__append_tag("heat_sources", "block", block)
 
-    def add_to_blacklist(self, item: str|list): self.__append_tag("essence_blacklist", "item", item)
+    def add_to_blacklist(self, item: str|list): 
+        # Add an item to the blacklist
+        self.__append_tag("essence_blacklist", "item", item)
 
-    def add_to_whitelist(self, item: str|list): self.__append_tag("essence_whitelist", "item", item)
+    def add_to_whitelist(self, item: str|list): 
+        # Add an item to the whitelist
+        self.__append_tag("essence_whitelist", "item", item)
         
-    def make_shelf_placeable(self, item: str|list): self.__append_tag("shelf_placeable", "item", item)
+    def make_shelf_placeable(self, item: str|list): 
+        # Make an item shelf placeable
+        self.__append_tag("shelf_placeable", "item", item)
         
 class Datapack:
     def __init__(self, name: str, desc: str, pack_format:str, verbose:bool=False):
+        # Initialize Datapack class
         self.verbose = verbose
         self.name = name
         self.namespace = "".join((name.lower()).split())
@@ -174,6 +247,7 @@ class Datapack:
             self._add_folder(complex_path)
 
     def gen_new(self):
+        # Generate new datapack
         if self.verbose: print("Generating new pack...")
         make_dir(self.basepath)
         if self.verbose: print("Basepath generated")
@@ -183,6 +257,7 @@ class Datapack:
         if self.verbose: print("Datapath generated")
 
     def save_data(self):
+        # Save datapack data
         if self.verbose: print("Saving datapack...")
 
         if self.verbose: print("Confirming elixirum tags...")
@@ -209,6 +284,7 @@ class Datapack:
         if self.verbose: print("End of save")
     
     def def_load(self, data: str|None = None):
+        # Define load function
         if self.verbose: print("Defining all paths to load function")
         self._add_folders(os.path.join("minecraft","tags","functions"))
 
@@ -222,6 +298,7 @@ class Datapack:
         if self.verbose: print("All files created")
 
     def def_tick(self, data: str|None = None):
+        # Define tick function
         if self.verbose: print("Defining all paths to tick function")
         self._add_folders(os.path.join("minecraft","tags","functions"))
 
@@ -235,6 +312,7 @@ class Datapack:
         if self.verbose: print("All files created")
 
     def def_func(self, name:str, data:str|None):
+        # Define a new function
         if self.verbose: print("Defining new " + name + " function")
 
         if os.path.join(self.namespace, "functions") not in self.folders: 
