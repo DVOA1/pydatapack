@@ -1,4 +1,11 @@
-import json, os
+import json
+import os
+import logging
+
+# Set up logging
+logging.basicConfig(format='%(asctime)s -  %(levelname)s - %(message)s', datefmt='%H:%M:%S', level=logging.INFO)
+
+logger = logging.getLogger(__name__)  # Create a logger object
 
 # Load version pack format and original files from JSON files
 with open(os.path.join(os.getcwd(), "pydatapack", "ver_pack_format.json") , "r") as vpf: ver_pack_format = json.load(vpf)
@@ -51,16 +58,6 @@ class Recipe:
         self.folders.append(os.path.join(self.namespace, "recipe"))
         self.dir_made = True
 
-    def shaped(self, output:str|dict, pattern:list|tuple, inputs:dict):
-        # Create a shaped recipe
-        if isinstance(output, dict):
-            count = output["count"]
-            output = output["id"]
-        else: count = 1
-        self.__new_recipe_folder()
-        data = {"type":"minecraft:crafting_shaped","pattern":pattern, "key":inputs, "result":{"id":output, "count":count}}
-        self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
-
     def __get_count(self, output:str|dict):
         # Get count from output
         if isinstance(output, dict):
@@ -68,6 +65,13 @@ class Recipe:
             output = output["id"]
         else: count = 1
         return output, count
+
+    def shaped(self, output:str|dict, pattern:list|tuple, inputs:dict):
+        # Create a shaped recipe
+        output, count = self.__get_count(output)
+        self.__new_recipe_folder()
+        data = {"type":"minecraft:crafting_shaped","pattern":pattern, "key":inputs, "result":{"id":output, "count":count}}
+        self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
 
     def shapeless(self, output:str|dict, inputs:list|tuple):
         # Create a shapeless recipe
@@ -121,9 +125,9 @@ class Recipe:
     def remove(self, output: str):
         # Remove a recipe
         namespace, itemid = output.split(':')
-        if self.verbose: print(f"The recipe in namespace {namespace} of {itemid} has been removed")
+        if self.verbose: logger.info(f"The recipe in namespace {namespace} of {itemid} has been removed")
         self.filters["block"] = [{"namespace":namespace,"path":f"recipe/{itemid}.json"}]
-        if self.verbose: print("Calling gen_new")
+        if self.verbose: logger.info("Calling gen_new")
         self.dtpk.gen_new()
 
 class Elixirum:
@@ -137,7 +141,11 @@ class Elixirum:
     def new_essence(self, effect:str, max_ampl:int, max_dur:int, category:str, min_ingredient: int, min_quality: int):
         # Create a new essence
         category = category.lower()
-        if category not in ["none", "offensive", "defensive", "enhancing", "diminishing"]: category = "none"
+        if self.dtpk.verbose: logger.info(f"New essence...")
+        if category not in ["none", "offensive", "defensive", "enhancing", "diminishing"]: 
+            if self.dtpk.verbose: logger.warning(f"Category \"{category}\" is not valid, setting to none")
+            category = "none"
+        if self.dtpk.verbose: logger.info(f"Creating new essence with effect \"{effect}\", max amplifier {max_ampl}, max duration {max_dur}, category \"{category}\", min ingredient {min_ingredient} and min quality {min_quality}")
         self.dtpk._add_folders(os.path.join("elixirum","elixirum","essence"))
         self.dtpk.files[os.path.join("elixirum","elixirum","essence", f"{effect.split(':')[-1]}.json")] = {"type":"json", "data":{"category":category, "max_amplifier":max_ampl, "max_duration":max_dur, "mob_effect":effect, "required_ingredients":min_ingredient, "required_quality":min_quality}}
 
@@ -145,7 +153,7 @@ class Elixirum:
         # Create a new ingredient preset
         self.dtpk._add_folders(os.path.join("elixirum","elixirum","ingredient_preset"))
         essences = {}
-
+        if self.dtpk.verbose: logger.info(f"Creating ingredient preset with essence \"{essence}\" and ingredient \"{ingredient}\" with weight x{weight}")
         if isinstance(essence, list): 
             for ess in essence: essences[ess] = weight
         else: essences[essence] = weight
@@ -164,7 +172,11 @@ class Elixirum:
     
     def _confirm_tags(self):
         # Confirm tags
-        if not (len(self.__all_tags) > 0): return
+        if not (len(self.__all_tags) > 0): 
+            if self.dtpk.verbose: logger.info(f"No tags to confirm")
+            return
+
+        if self.dtpk.verbose: logger.info(f"Confirming tags...")
 
         tags = ["heat_sources", "essence_blacklist", "essence_whitelist", "shelf_placeable"]
 
@@ -172,7 +184,7 @@ class Elixirum:
         for id in self.__removed_tags:
             blacklist.remove(id)
         self.__all_tags.append({"tag":"essence_blacklist", "type":"item", "id":blacklist, "replace":True})
-        print(self.__all_tags)
+        
         for t in tags:
             tags_id, replace = [], []
             for tag in self.__all_tags:
@@ -180,14 +192,17 @@ class Elixirum:
                     if isinstance(tag["id"], list): tags_id.extend(tag["id"])
                     else: tags_id.append(tag["id"])
                     replace.append(tag["replace"])
-            if len(tags_id) > 0: self.__add_tag(t, tag["type"], tags_id, any(replace))
+            if len(tags_id) > 0: 
+                if self.dtpk.verbose: logger.info(f"Adding tag \"{t}\" with ids {tags_id} and replace {any(replace)}")
+                self.__add_tag(t, tag["type"], tags_id, any(replace))
     
     def __append_tag(self, tag: str, tag_type: str, id: str | list):
         # Append a tag
         if tag == "essence_whitelist":
             ids = id if isinstance(id, list) else [id]
             self.__removed_tags.extend(i for i in ids if i in original_files["essence_blacklist.json"]["values"])
-        
+            if self.dtpk.verbose: logger.warning(f"Whitelisted item is in blacklist! Removing {ids} from blacklist")
+        if self.dtpk.verbose: logger.info(f"Creating tag \"{tag}\" with type \"{tag_type}\" and id \"{id}\"")
         self.__all_tags.append({"tag": tag, "type": tag_type, "id": id, "replace": False})
 
     def new_heat_source(self, block: str|list): 
@@ -248,75 +263,80 @@ class Datapack:
 
     def gen_new(self):
         # Generate new datapack
-        if self.verbose: print("Generating new pack...")
+        if self.verbose: logger.info("Generating new pack...")
         make_dir(self.basepath)
-        if self.verbose: print("Basepath generated")
+        if self.verbose: logger.info("Basepath generated")
         with open(os.path.join(self.basepath, "pack.mcmeta"), "w") as mcmeta: json.dump({"pack":{"description":self.desc,"pack_format":self.pack_format}, "filter":self.filters}, mcmeta, indent=4)
-        if self.verbose: print("MCMETA generated")
+        if self.verbose: logger.info("MCMETA generated")
         make_dir(self.datapath)
-        if self.verbose: print("Datapath generated")
+        if self.verbose: logger.info("Datapath generated")
 
-    def save_data(self):
+    def save_data(self, verbose_save:bool|None=None):
         # Save datapack data
-        if self.verbose: print("Saving datapack...")
+        verbose_save = self.verbose if verbose_save == None else verbose_save
+        if self.verbose: 
+            logger.info(f"{'-'*20} SAVING {'-'*20}")
+            logger.info("Saving datapack...")
 
-        if self.verbose: print("Confirming elixirum tags...")
+        if self.verbose: logger.info("Confirming elixirum tags...")
         self.elixirum._confirm_tags()
 
-        if len(self.folders) == 0:
-            if self.verbose: print("No folders to generate! Returning...")
-            return
+        if verbose_save: logger.info(f"{'-'*20} FILES AND FOLDERS {'-'*20}")
         
+        if len(self.folders) == 0:
+            if verbose_save: logger.info("No folders to generate! Returning...")
+            return
+
         for folder in self.folders:
-            if self.verbose: print("New folder: ", os.path.join(self.datapath,folder))
+            if verbose_save: logger.info(f"New folder: {os.path.join(self.datapath,folder)}")
             make_dir(os.path.join(self.datapath,folder))
 
         if len(self.files) == 0: 
-            if self.verbose: print("No files to generate! Returning...")
+            if verbose_save: logger.info("No files to generate! Returning...")
             return
         
         for file in self.files:
-            if self.verbose: print("New file: ", file)
+            if verbose_save: logger.info(f"New file: {file}")
             with open(os.path.join(self.datapath, file), "w") as fl:
                 if self.files[file]["type"] == "json": json.dump(self.files[file]["data"], fl, indent=4)
                 else: fl.write(self.files[file]["data"])
 
-        if self.verbose: print("End of save")
+        if self.verbose: logger.info("End of save")
     
     def def_load(self, data: str|None = None):
         # Define load function
-        if self.verbose: print("Defining all paths to load function")
+        if self.verbose: logger.info("Defining all paths to load function")
         self._add_folders(os.path.join("minecraft","tags","functions"))
 
-        if self.verbose: print("Minecraft namespace paths created")
+        if self.verbose: logger.info("Minecraft namespace paths created")
         self._add_folders(os.path.join(self.namespace, "functions"))
         self.files[os.path.join("minecraft", "tags", "functions", "load.json")] = {"type":"json", "data":{"values":[f"{self.namespace}:load"]}}
 
         if data == None: self.files[os.path.join(self.namespace, "functions", "load.mcfunction")] = {"type":"text", "data":'tellraw @a {"text":"The '+self.name+' datapack has loaded correctly", "color":"green"}'}
         else: self.files[os.path.join(self.namespace, "functions", "load.mcfunction")] = {"type":"text", "data":data}
 
-        if self.verbose: print("All files created")
+        if self.verbose: logger.info("All files created")
 
     def def_tick(self, data: str|None = None):
         # Define tick function
-        if self.verbose: print("Defining all paths to tick function")
+        if self.verbose: logger.info("Defining all paths to tick function")
         self._add_folders(os.path.join("minecraft","tags","functions"))
 
-        if self.verbose: print("Minecraft namespace paths created")
+        if self.verbose: logger.info("Minecraft namespace paths created")
         self._add_folders(os.path.join(self.namespace, "functions"))
         self.files[os.path.join("minecraft","tags","functions","tick.json")] = {"type":"json", "data":{"values":[f"{self.namespace}:tick"]}}
 
         if data == None: self.files[os.path.join(self.namespace, "functions", "tick.mcfunction")] = {"type":"text", "data":'tellraw @a "Tick!"'}
         else: self.files[os.path.join(self.namespace, "functions", "tick.mcfunction")] = {"type":"text", "data":data}
 
-        if self.verbose: print("All files created")
+        if self.verbose: logger.info("All files created")
 
     def def_func(self, name:str, data:str|None):
         # Define a new function
-        if self.verbose: print("Defining new " + name + " function")
+        if self.verbose: logger.info(f"Defining new \"{name}\" function")
 
         if os.path.join(self.namespace, "functions") not in self.folders: 
-            if self.verbose: print(self.namespace+ " namespace paths created")
+            if self.verbose: logger.info(f"{self.namespace} namespace paths created")
             self._add_folder(os.path.join(self.namespace, "functions"))
 
         if data == None: self.files[os.path.join(self.namespace, "functions", f"{name}.mcfunction")] = {"type":"text", "data":'tellraw @a {"text":"This function has no data inside", "color":"red"}'}
