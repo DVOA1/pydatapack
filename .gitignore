@@ -1,4 +1,6 @@
-*_test.py
 __pycache__/
+generated_datapack/
+
+*_test.py
 *.pyc
-TestElixirum/
+*.zip
