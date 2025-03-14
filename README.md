@@ -2,10 +2,10 @@
 
 ![LOGO](assets/logo.png "Pydatapack logo")
 
-## Packcreator.py Documentation
+## Pydatapack Documentation
 
 ### Overview
-`packcreator.py` is a Python script designed to facilitate the creation and management of Minecraft datapacks.
+**Pydatapack** is a Python script designed to facilitate the creation and management of Minecraft datapacks.
 
 ### Classes and Methods
 
