@@ -6,10 +6,6 @@ from shutil import make_archive
 from tempfile import TemporaryDirectory
 from os import PathLike
 
-# Load all addons
-from pydatapack.packcreator_recipe import Recipe
-from pydatapack.packcreator_elixirum import Elixirum
-
 # Get current working directory
 cwd = os.getcwd()
 
@@ -21,11 +17,13 @@ logger = logging.getLogger(__name__)
 
 # Load version pack format from JSON file
 with open(os.path.join(cwd, "pydatapack", "ver_pack_format.json") , "r") as vpf: ver_pack_format = json.load(vpf)
+# Load original_files from JSON file
+with open(os.path.join(cwd, "pydatapack", "original_files.json") , "r") as vpf: original_files = json.load(vpf)
 
-def make_dir(path):
-    # Create a directory if it doesn't exist
-    try: os.mkdir(path)
-    except FileExistsError: return
+# Load all addons
+from pydatapack.packcreator_recipe import Recipe
+from pydatapack.packcreator_elixirum import Elixirum
+from pydatapack.packcreator_tags import Tags
 
 def version_to_pack(version: str):
     # Convert version string to pack format
@@ -61,6 +59,8 @@ class Datapack:
         self.__folders = [self.namespace]
         self._files = {}
         self.__filters = {}
+        self.__all_tags = []
+        self.__tags_name = []
         self.save_to_zip = save_to_zip
 
         if save_to_zip:
@@ -72,6 +72,7 @@ class Datapack:
             self.__change_save_path(self.temp_path)
         self.gen_new()
 
+        self.tags = Tags(self)
         self.recipes = Recipe(self, self.namespace, self._files, self.__folders, self.__filters, verbose)
         self.elixirum = Elixirum(self)
     
@@ -79,6 +80,11 @@ class Datapack:
         # Change the save path
         self.basepath = path
         self.datapath = os.path.join(self.basepath,"data")
+    
+    def __make_dir(self, path):
+        # Create a directory if it doesn't exist
+        try: os.mkdir(path)
+        except FileExistsError: return
 
     def _add_folder(self, name:str):
         '''
@@ -106,11 +112,11 @@ class Datapack:
     def gen_new(self):
         # Generate new datapack
         if self.verbose: logger.info("Generating new pack...")
-        make_dir(self.basepath)
+        self.__make_dir(self.basepath)
         if self.verbose: logger.info("Basepath generated")
         with open(os.path.join(self.basepath, "pack.mcmeta"), "w") as mcmeta: json.dump({"pack":{"description":self.desc,"pack_format":self.pack_format}, "filter":self.__filters}, mcmeta, indent=4)
         if self.verbose: logger.info("MCMETA generated")
-        make_dir(self.datapath)
+        self.__make_dir(self.datapath)
         if self.verbose: logger.info("Datapath generated")
 
     def save_data(self, verbose_save:bool|None=None):
@@ -120,8 +126,8 @@ class Datapack:
             logger.info(f"{'-'*20} SAVING {'-'*20}")
             logger.info("Saving datapack...")
 
-        if self.verbose: logger.info("Confirming elixirum tags...")
-        self.elixirum._confirm_tags()
+        if self.verbose: logger.info("Confirming all tags...")
+        self.tags._confirm_tags()
 
         if verbose_save: logger.info(f"{'-'*20} FILES AND FOLDERS {'-'*20}")
         
@@ -131,7 +137,7 @@ class Datapack:
 
         for folder in self.__folders:
             if verbose_save: logger.info(f"New folder: {os.path.join(self.datapath,folder)}")
-            make_dir(os.path.join(self.datapath,folder))
+            self.__make_dir(os.path.join(self.datapath,folder))
 
         if len(self._files) == 0: 
             if verbose_save: logger.info("No _files to generate! Returning...")
