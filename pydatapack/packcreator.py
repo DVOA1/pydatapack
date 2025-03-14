@@ -66,44 +66,56 @@ class Recipe:
         else: count = 1
         return output, count
 
-    def shaped(self, output:str|dict, pattern:list|tuple, inputs:dict):
+    def __check_category(self, category:str, type:int):
+        # Check if category is valid
+        match type:
+            case 0: categories = ["building", "redstone", "equipment", "misc"]
+            case 1: categories = ["food", "block", "misc"]
+        if category not in categories:
+            if self.verbose: logger.warning(f"Category \"{category}\" is not valid, setting to misc")
+            return "misc"
+
+    def shaped(self, output:str|dict, pattern:list|tuple, inputs:dict, category:str|None=None):
         # Create a shaped recipe
         output, count = self.__get_count(output)
+        self.__check_category(category, 0)
         self.__new_recipe_folder()
-        data = {"type":"minecraft:crafting_shaped","pattern":pattern, "key":inputs, "result":{"id":output, "count":count}}
+        data = {"type":"minecraft:crafting_shaped","category": category, "pattern":pattern, "key":inputs, "result":{"id":output, "count":count}}
         self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
 
-    def shapeless(self, output:str|dict, inputs:list|tuple):
+    def shapeless(self, output:str|dict, inputs:list|tuple, category:str|None=None):
         # Create a shapeless recipe
         output, count = self.__get_count(output)
+        self.__check_category(category, 0)
         self.__new_recipe_folder()
         if len(inputs) > 9: raise ValueError("The maximum amount of inputs is 9")
-        data = {"type":"minecraft:crafting_shapeless", "ingredients":inputs, "result":{"id":output, "count":count}}
+        data = {"type":"minecraft:crafting_shapeless", "category": category, "ingredients":inputs, "result":{"id":output, "count":count}}
         self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
     
-    def __smelting(self, output:str|dict, input:str|dict, xp:float, cookingtime:int, recipe_type:str):
+    def __smelting(self, output:str|dict, input:str|dict, xp:float, cookingtime:int, recipe_type:str, category:str|None=None):
         # Create a smelting recipe
         output, count = self.__get_count(output)
         if isinstance(input, dict): input = input["id"]
+        self.__check_category(category, 1)
         self.__new_recipe_folder()
-        data = {"type":recipe_type,"ingredient":{"item":input},"result":{"item":output,"count":count},"experience":xp,"cookingtime":cookingtime}
+        data = {"type":recipe_type, "category": category, "ingredient":{"item":input},"result":{"item":output,"count":count},"experience":xp,"cookingtime":cookingtime}
         self.files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
 
-    def smelting(self, output:str|dict, input:str|dict, xp:float, cookingtime:int): 
+    def smelting(self, output:str|dict, input:str|dict, xp:float, cookingtime:int, category:str|None=None): 
         # Create a smelting recipe
-        self.__smelting(output, input, xp, cookingtime, "minecraft:smelting")
+        self.__smelting(output, input, xp, cookingtime, "minecraft:smelting", category)
 
-    def blasting(self, output:str|dict, input:str|dict, xp:float, cookingtime:int): 
+    def blasting(self, output:str|dict, input:str|dict, xp:float, cookingtime:int, category:str|None=None): 
         # Create a blasting recipe
-        self.__smelting(output, input, xp, cookingtime, "minecraft:blasting")
+        self.__smelting(output, input, xp, cookingtime, "minecraft:blasting", category)
 
-    def smoking(self, output:str|dict, input:str|dict, xp:float, cookingtime:int): 
+    def smoking(self, output:str|dict, input:str|dict, xp:float, cookingtime:int, category:str|None=None): 
         # Create a smoking recipe
-        self.__smelting(output, input, xp, cookingtime, "minecraft:smoking")
+        self.__smelting(output, input, xp, cookingtime, "minecraft:smoking", category)
 
-    def campfire_cooking(self, output:str|dict, input:str|dict, xp:float, cookingtime:int): 
+    def campfire_cooking(self, output:str|dict, input:str|dict, xp:float, cookingtime:int, category:str|None=None): 
         # Create a campfire cooking recipe
-        self.__smelting(output, input, xp, cookingtime, "minecraft:campfire_cooking")
+        self.__smelting(output, input, xp, cookingtime, "minecraft:campfire_cooking", category)
 
     def stonecutting(self, output:str|dict, input:str|dict):
         # Create a stonecutting recipe
