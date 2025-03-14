@@ -11,7 +11,7 @@ from os import PathLike
 cwd = os.getcwd()
 
 # Set up logging
-logging.basicConfig(filemode='w', filename=os.path.join(cwd, f"pydatapack_{randbytes(5).hex()}.log"), format='%(asctime)s -  %(levelname)s - %(message)s', datefmt='%H:%M:%S', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s -  %(levelname)s - %(message)s', datefmt='%H:%M:%S', level=logging.INFO)
 
 # Create a logger object
 logger = logging.getLogger(__name__) 
