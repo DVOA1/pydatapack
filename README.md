@@ -11,7 +11,7 @@
 
 #### Datapack
 
-- **`Datapack(self, name: str, desc: str, pack_format: str, verbose: bool = False)`**: Initializes the Datapack class.
+- **`Datapack(self, name: str, desc: str, pack_format: str, verbose: bool = False)`**: Initializes the Datapack class. You can specify whether to save the datapack as a folder or as a zip.
 
 - **`save_data(self, verbose_save: bool | None = None)`**: Saves the datapack data and generates all the necessary files and folders.
 

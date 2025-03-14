@@ -4,3 +4,4 @@ generated_datapack/
 *_test.py
 *.pyc
 *.zip
+*.log
