@@ -46,19 +46,19 @@
 > This generator implements all the functionalities for making Ars Elixirum datapacks, including creating new essences, ingredient presets, configured elixirs, adding heat sources, and managing blacklists and whitelists.
 For a more detailed explanation on what the parameters do, please consult the [Ars Elixirum documentation](https://github.com/DVOA1/ElixirumDocs/blob/main/README.md#elixirum)
 
-- **`new_essence(self, effect: str, max_ampl: int, max_dur: int, category: str, min_ingredient: int, min_quality: int)`**: Creates a new essence.
+- **`elixirum.new_essence(self, effect: str, max_ampl: int, max_dur: int, category: str, min_ingredient: int, min_quality: int)`**: Creates a new essence.
 
-- **`new_ingredient_preset(self, essence: str | list, ingredient: str, weight: int)`**: Creates a new ingredient preset.
+- **`elixirum.new_ingredient_preset(self, essence: str | list, ingredient: str, weight: int)`**: Creates a new ingredient preset.
 
-- **`new_configured_elixir(self, data: dict)`**: Creates a new configured elixir.
+- **`elixirum.new_configured_elixir(self, data: dict)`**: Creates a new configured elixir.
 
-- **`new_heat_source(self, block: str | list)`**: Adds a new heat source.
+- **`elixirum.new_heat_source(self, block: str | list)`**: Adds a new heat source.
 
-- **`add_to_blacklist(self, item: str | list)`**: Adds an item to the blacklist.
+- **`elixirum.add_to_blacklist(self, item: str | list)`**: Adds an item to the blacklist.
 
-- **`add_to_whitelist(self, item: str | list)`**: Adds an item to the whitelist.
+- **`elixirum.add_to_whitelist(self, item: str | list)`**: Adds an item to the whitelist.
 
-- **`make_shelf_placeable(self, item: str | list)`**: Makes an item shelf placeable.
+- **`elixirum.make_shelf_placeable(self, item: str | list)`**: Makes an item shelf placeable.
 
 ### Logging
 
