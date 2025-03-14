@@ -1,232 +1,108 @@
-# How to Make a Datapack for Ars Elixirum
+### ARS ELIXIRUM DOCS ARE NOW MOVED IN A [NEW REPOSITORY](https://github.com/DVOA1/ElixirumDocs)
 
-## Key Concepts
+![LOGO](assets/logo.png "Pydatapack logo")
 
-> NOTE: These key points are not the only things this guide provides. These are only the most important concepts to make more relevant things in the datapack.
+## Packcreator.py Documentation
 
-- [Adding Custom Essences](#add-essence)
-- [Tags](#tags)
-- [How to Use Pydatapack](#pydatapack)
+### Overview
+`packcreator.py` is a Python script designed to facilitate the creation and management of Minecraft datapacks.
 
-## Folders Structure
+### Classes and Methods
 
-```bash
-data/
-└── elixirum/
-    ├── elixirum/
-    │   ├── configured_elixir
-    │   ├── elixir_prefix
-    │   ├── essence
-    │   └── ingredient_preset
-    └── tags/
-        ├── block/
-        │   └── heat_sources.json
-        └── item/
-            ├── essence_blacklist.json
-            ├── essence_whitelist.json
-            └── potion_shelf_placeable.json
+#### Datapack
+
+- **`Datapack(self, name: str, desc: str, pack_format: str, verbose: bool = False)`**: Initializes the Datapack class.
+
+- **`save_data(self, verbose_save: bool | None = None)`**: Saves the datapack data and generates all the necessary files and folders.
+
+- **`def_load(self, data: str | None = None)`**: Defines the load function.
+
+- **`def_tick(self, data: str | None = None)`**: Defines the tick function.
+
+- **`def_func(self, name: str, data: str | None)`**: Defines a new function.
+
+#### Recipe
+
+- **`recipe.shaped(self, output: str | dict, pattern: list | tuple, inputs: dict, category: str | None = None)`**: Creates a shaped recipe.
+
+- **`recipe.shapeless(self, output: str | dict, inputs: list | tuple, category: str | None = None)`**: Creates a shapeless recipe.
+
+- **`recipe.smelting(self, output: str | dict, input: str | dict, xp: float, cookingtime: int, category: str | None = None)`**: Creates a smelting recipe.
+
+- **`recipe.blasting(self, output: str | dict, input: str | dict, xp: float, cookingtime: int, category: str | None = None)`**: Creates a blasting recipe.
+
+- **`recipe.smoking(self, output: str | dict, input: str | dict, xp: float, cookingtime: int, category: str | None = None)`**: Creates a smoking recipe.
+
+- **`recipe.campfire_cooking(self, output: str | dict, input: str | dict, xp: float, cookingtime: int, category: str | None = None)`**: Creates a campfire cooking recipe.
+
+- **`recipe.stonecutting(self, output: str | dict, input: str | dict)`**: Creates a stonecutting recipe.
+
+- **`recipe.smithing(self, base: str | dict, addition: str | dict, output: str | dict)`**: Creates a smithing recipe.
+
+- **`recipe.remove(self, output: str)`**: Removes a recipe.
+
+#### Elixirum
+
+> This generator implements all the functionalities for making Ars Elixirum datapacks, including creating new essences, ingredient presets, configured elixirs, adding heat sources, and managing blacklists and whitelists.
+For a more detailed explanation on what the parameters do, please consult the [Ars Elixirum documentation](https://github.com/DVOA1/ElixirumDocs/blob/main/README.md#elixirum)
+
+- **`new_essence(self, effect: str, max_ampl: int, max_dur: int, category: str, min_ingredient: int, min_quality: int)`**: Creates a new essence.
+
+- **`new_ingredient_preset(self, essence: str | list, ingredient: str, weight: int)`**: Creates a new ingredient preset.
+
+- **`new_configured_elixir(self, data: dict)`**: Creates a new configured elixir.
+
+- **`new_heat_source(self, block: str | list)`**: Adds a new heat source.
+
+- **`add_to_blacklist(self, item: str | list)`**: Adds an item to the blacklist.
+
+- **`add_to_whitelist(self, item: str | list)`**: Adds an item to the whitelist.
+
+- **`make_shelf_placeable(self, item: str | list)`**: Makes an item shelf placeable.
+
+### Logging
+
+The script uses Python's built-in logging module to provide detailed logs of its operations. Logging is configured at the beginning of the script and can be controlled via the `verbose` parameter in the `Datapack` class.
+
+### Usage
+
+To use the script, create an instance of the `Datapack` class and use its methods to define recipes, tags, and other datapack elements. Save the datapack using the `save_data` method.
+
+Example:
+
+```python
+dp = Datapack("MyDatapack", "A custom Minecraft datapack", "6", verbose=True)
+dp.recipes.shaped("minecraft:diamond_sword", [" A ", " A ", " B "], {"A": "minecraft:diamond", "B": "minecraft:stick"})
+dp.save_data()
 ```
 
----
-
-## Elixirum Folder
-
-Inside the `elixirum` folder, create another `elixirum` folder, which will contain everything we will make.
-
-### Configured Elixir Folder
-
-Contains an effect (referencing a pre-made essence) that can have multiple variants. You can only modify *amplifier* and *duration*.
-
-The file name must be the essence name.
-
-**Template (taken from the mod code):**
-
-```json
-{
-  "variants": [
-    [
-      {
-        "amplifier": 0,
-        "duration": 60,
-        "essence": "elixirum:health_boost"
-      }
-    ],
-    [
-      {
-        "amplifier": 2,
-        "duration": 180,
-        "essence": "elixirum:health_boost"
-      }
-    ],
-    [
-      {
-        "amplifier": 5,
-        "duration": 360,
-        "essence": "elixirum:health_boost"
-      }
-    ]
-  ]
-}
-```
-
----
-
-### Elixir Prefix Folder
-
-Applies a random prefix to the essence (e.g., "Devastating elixir of strength"). It takes a lang key from the lang file and applies it as a prefix.
-
-**Template (taken from the mod code):**
-
-```json
-{
-  "key": "effect_prefix.elixirum.absorption_assimilating",
-  "source": "minecraft:absorption"
-}
-```
-
----
-
-<a id="add-essence"></a>
-
-### Essence Folder
-
-The most important folder. Here you will add your effects with the following parameters:
-
-- **category**: can be "NONE", "OFFENSIVE", "DEFENSIVE", "ENHANCING", "DIMINISHING".
-- **max_amplifier**: sets the maximum amplifier (starting from 0) the essence can have. The essence can have any amplifier below this number.
-- **max_duration**: sets the maximum duration the essence can have. The essence can have any duration below this number.
-- **mob_effect**: the ID of the effect you want to generate (e.g., "farmersdelight:comfort").
-- **required_ingredients**: minimum amount of ingredient to make this essence non-pale.
-- **required_quality**: minimum amount of quality to make this essence non-weak.
-
-The file name must be the effect name (without namespace).
-
-**Template (generated by my code):**
-
-```json
-{
-  "category": "enhancing",
-  "max_amplifier": 3,
-  "max_duration": 1200,
-  "mob_effect": "farmersdelight:comfort",
-  "required_ingredients": 1,
-  "required_quality": 10
-}
-```
-
----
-
-### Ingredient Preset Folder
-
-Contains every ingredient with a set effect and weight.
-> **Note**: Almost every item in the game will have a randomly generated effect based on the seed.
-
-**Parameters:**
-
-- **essences**: contains every essence that the set item will have
-  - **ESSENCE_ID** (using "elixirum:" as namespace): weight
-- **target**: contains the item ID
-
-The file name must be the item name.
-
-**Template (taken from the mod code):**
-
-```json
-{
-  "essences": {
-    "elixirum:saturation": 20
-  },
-  "target": "minecraft:blue_orchid"
-}
-```
-
----
-
-<a id="tags"></a>
-
-## Tags
-
-With tags you can filter ingredients, make items placeable on shelves and make heat sources compatible with cauldrons.
-
-Here's how:
-
----
-
-### Filter Ingredients
-
-To add an item to the ingredient gen blacklist, you add the tag `#elixirum:essence_blacklist`. This will **ALWAYS** override the whitelist
-
-You can also add item to a whitelist by adding the tag `#elixirum:essence_whitelist`. Does nothing if the item is in the blacklist.
-
----
-
-### Making Items Placeable On Shelves
-
-You can make item placeable on shelves by adding the tag `#elixirum:potion_shelf_placeable`
-
----
-
-### Adding New Heat Sources
-
-You can make an heat source compatible with Ars Elixirum's cauldrons by adding the tag `#elixirum:heat_sources`
-
-By default the compatible heat sources are the following:
-
-> heat_sources.json
-
-```json
-{
-  "values": [
-    {
-      "id": "#minecraft:fire",
-      "required": false
-    },
-    {
-      "id": "#minecraft:campfires",
-      "required": false
-    },
-    "minecraft:magma_block"
-  ]
-}
-```
-
-Here is an example, i've added the create blaze burner as an heat source:
-
-![Blaze Burner under Glass Cauldron](/blaze_heat.png)
-
----
-
-<a id="pydatapack"></a>
-
-## Template pydatapack for Ars Elixirum
+Ars Elixirum example:
 
 ```python
 import pydatapack as pdp
 
-# Creates a new datapack with the following parameters (NAME, DESC, PACK_FORMAT, VERBOSE_LOG)
-# You can also use pdp.version_to_pack(VERSION) to automatically get the correct pack_format
-# (E.G pdp.version_to_pack("1.21.1") => 48)
-test = pdp.Datapack("TestElixirum", "Test for Ars Elixirum", 48, True)
+# Creates a new datapack
+datapack = pdp.Datapack("TestElixirum", "Test for Ars Elixirum", 48, True)
 
-# Creates a generic load mcfunction. Parameters (DATA [OPTIONAL])
-test.def_load()
+# Creates a generic load mcfunction
+datapack.def_load()
 
-# Creates a new essence with the following parameters (EFFECT_ID, MAX_AMPLIFICATION, MAX_DURATION, CATEGORY, MIN_INGREDIENTS, MIN_QUALITY)
-test.elixirum.new_essence("farmersdelight:comfort", 3, 1200, "enhancing", 1, 10)
+# Creates a new comfort essence
+datapack.elixirum.new_essence("farmersdelight:comfort", 3, 1200, "enhancing", 1, 10)
 
-# Creates a new preset ingredient with the following parameters (ESSENCE [can be string or list], INGREDIENT_ID, WEIGHT)
-test.elixirum.new_ingredient_preset("elixirum:comfort", "create:experience_nugget", 20)
+# Creates a new ingredient preset
+datapack.elixirum.new_ingredient_preset("elixirum:comfort", "create:experience_nugget", 20)
 
-# Adds the '#elixirum:heat_sources' tag to the block. Parameters (BLOCK)
-test.elixirum.new_heat_source("create:blaze_burner")
+# Adds the '#elixirum:heat_sources' tag to the block
+datapack.elixirum.new_heat_source("create:blaze_burner")
 
 # You can also add the following tags with their respective methods:
 # - '#elixirum:essences_blacklist' : DATAPACK.elixirum.add_to_blacklist(ITEM)
 # - '#elixirum:essences_whitelist' : DATAPACK.elixirum.add_to_whitelist(ITEM)
 # - '#elixirum:potion_shelf_placeable' : DATAPACK.elixirum.make_shelf_placeable(ITEM)
 
-# Generates the datapack
-test.save_data()
+# Confirms everything an generates the datapack
+datapack.save_data()
 ```
 
 ##### DVOA1 | 2025
