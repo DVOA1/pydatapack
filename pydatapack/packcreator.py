@@ -2,10 +2,11 @@ import json
 import os
 import logging
 
-from random import randbytes
 from shutil import make_archive
 from tempfile import TemporaryDirectory
 from os import PathLike
+
+# Load all addons
 from pydatapack.packcreator_recipe import Recipe
 from pydatapack.packcreator_elixirum import Elixirum
 
@@ -18,9 +19,8 @@ logging.basicConfig(format='%(asctime)s -  %(levelname)s - %(message)s', datefmt
 # Create a logger object
 logger = logging.getLogger(__name__) 
 
-# Load version pack format and original _files from JSON _files
+# Load version pack format from JSON file
 with open(os.path.join(cwd, "pydatapack", "ver_pack_format.json") , "r") as vpf: ver_pack_format = json.load(vpf)
-with open(os.path.join(cwd, "pydatapack", "original_files.json") , "r") as vpf: original_files = json.load(vpf)
 
 def make_dir(path):
     # Create a directory if it doesn't exist

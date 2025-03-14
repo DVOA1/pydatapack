@@ -1,5 +1,10 @@
 import os
-from pydatapack.packcreator import logger, original_files
+import json
+
+from pydatapack.packcreator import logger, cwd
+
+# Load original_files from JSON file
+with open(os.path.join(cwd, "pydatapack", "original_files.json") , "r") as vpf: original_files = json.load(vpf)
 
 class Elixirum:
     def __init__(self, dtpk):
