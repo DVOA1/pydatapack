@@ -1,7 +1,7 @@
 import os
 import json
 
-from pydatapack.packcreator import logger, original_files
+from pydatapack.packcreator import logger, essence_blacklist_file
 
 class Elixirum:
     def __init__(self, dtpk):
@@ -40,11 +40,15 @@ class Elixirum:
         # Append a tag
         if tag == "essence_whitelist":
             ids = id if isinstance(id, list) else [id]
-            self._removed_tags.extend(i for i in ids if i in original_files["essence_blacklist.json"]["values"])
+            self._removed_tags.extend(i for i in ids if i in essence_blacklist_file["essence_blacklist.json"]["values"])
             if self.dtpk.verbose: logger.warning(f"Whitelisted item is in blacklist! Removing {ids} from blacklist")
+        
 
-        if self.dtpk.verbose: logger.info(f"Creating tag \"{tag}\" with type \"{tag_type}\" and id \"{id}\"")
-        self.dtpk.tags._all_tags.append({"tag": tag, "type": tag_type, "id": id, "replace": False})
+        data = {"tag": tag, "type": tag_type, "id": id, "replace": False, "namespace":"elixirum"}
+        if self.dtpk.verbose: 
+            logger.info(f"Creating tag \"{tag}\" with type \"{tag_type}\" and id \"{id}\" {data}")
+            logger.debug(f"Data is equal to: {data}")
+        self.dtpk.tags._all_tags.append(data)
 
     def new_heat_source(self, block: str|list): 
         # Add a new heat source

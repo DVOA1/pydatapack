@@ -2,6 +2,7 @@ import json
 import os
 import logging
 
+from pydatapack.log_formatter import ColorFormatter
 from shutil import make_archive
 from tempfile import TemporaryDirectory
 from os import PathLike
@@ -9,16 +10,22 @@ from os import PathLike
 # Get current working directory
 cwd = os.getcwd()
 
-# Set up logging
-logging.basicConfig(format='%(asctime)s -  %(levelname)s - %(message)s', datefmt='%H:%M:%S', level=logging.INFO)
+logger_level = logging.DEBUG
 
 # Create a logger object
-logger = logging.getLogger(__name__) 
+logger = logging.getLogger(__name__)
+logger.setLevel(logger_level)
+
+# Create logging stream handler
+ch = logging.StreamHandler()
+ch.setLevel(logger_level)
+ch.setFormatter(ColorFormatter())
+logger.addHandler(ch)
 
 # Load version pack format from JSON file
 with open(os.path.join(cwd, "pydatapack", "ver_pack_format.json") , "r") as vpf: ver_pack_format = json.load(vpf)
-# Load original_files from JSON file
-with open(os.path.join(cwd, "pydatapack", "original_files.json") , "r") as vpf: original_files = json.load(vpf)
+# Load essence_blacklist_file from JSON file
+with open(os.path.join(cwd, "pydatapack", "essence_blacklist_file.json") , "r") as vpf: essence_blacklist_file = json.load(vpf)
 
 # Load all addons
 from pydatapack.packcreator_recipe import Recipe
@@ -81,10 +88,12 @@ class Datapack:
         self.basepath = path
         self.datapath = os.path.join(self.basepath,"data")
     
-    def __make_dir(self, path):
+    def __make_dir(self, path: PathLike|str, verbose_save: bool = True):
         # Create a directory if it doesn't exist
         try: os.mkdir(path)
-        except FileExistsError: return
+        except FileExistsError: 
+            if verbose_save: logger.error(f"Path already exists! Returning...")
+            return
 
     def _add_folder(self, name:str):
         '''
@@ -129,15 +138,17 @@ class Datapack:
         if self.verbose: logger.info("Confirming all tags...")
         self.tags._confirm_tags()
 
-        if verbose_save: logger.info(f"{'-'*20} FILES AND FOLDERS {'-'*20}")
+        if verbose_save: 
+            logger.info(f"{'-'*20} FILES AND FOLDERS {'-'*20}")
+        else: logger.info("Verbose save is turned off")
         
         if len(self.__folders) == 0:
-            if verbose_save: logger.info("No __folders to generate! Returning...")
+            if verbose_save: logger.info("No folders to generate! Returning...")
             return
 
         for folder in self.__folders:
             if verbose_save: logger.info(f"New folder: {os.path.join(self.datapath,folder)}")
-            self.__make_dir(os.path.join(self.datapath,folder))
+            self.__make_dir(os.path.join(self.datapath,folder), verbose_save=verbose_save)
 
         if len(self._files) == 0: 
             if verbose_save: logger.info("No _files to generate! Returning...")

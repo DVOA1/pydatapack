@@ -1,6 +1,6 @@
 import os
 
-from pydatapack.packcreator import logger, original_files
+from pydatapack.packcreator import logger, essence_blacklist_file
 
 class Tags:
     def __init__(self, dtpk):
@@ -25,7 +25,7 @@ class Tags:
         if self.dtpk.verbose: logger.info(f"Confirming tags...")
 
         if len(self.dtpk.elixirum._removed_tags) > 0:
-            blacklist = original_files["essence_blacklist.json"]["values"]
+            blacklist = essence_blacklist_file["essence_blacklist.json"]["values"]
             for id in self.dtpk.elixirum._removed_tags:
                 blacklist.remove(id)
             self._all_tags.append({"tag":"essence_blacklist", "type":"item", "id":blacklist, "replace":True})
@@ -38,8 +38,11 @@ class Tags:
                     else: tags_id.append(tag["id"])
                     replace.append(tag["replace"])
             if len(tags_id) > 0: 
-                if self.dtpk.verbose: logger.info(f"Adding tag \"{t}\" with ids {tags_id} and replace {any(replace)}")
-                self.__add_tag(t, tag["type"], tags_id, any(replace))
+                if self.dtpk.verbose: 
+                    namespace_info = f" in namespace {tag.get('namespace')}" if tag.get("namespace", None) is not None else ""
+                    logger.info(f"Adding tag \"{t}\" with ids {tags_id} and replace {any(replace)}{namespace_info}")
+                    logger.debug(f"Current tag is equal to {tag}")
+                self.__add_tag(t, tag["type"], tags_id, any(replace), tag.get("namespace", None))
     
     def new_tag(self, tag: str, tag_type: str, id: str | list):
         # Append a tag

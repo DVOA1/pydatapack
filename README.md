@@ -21,6 +21,8 @@
 
 - **`def_func(self, name: str, data: str | None)`**: Defines a new function.
 
+- **`def_func(self, name: str, data: str | None)`**: Creates a new tag.
+
 #### Recipe
 
 - **`recipe.shaped(self, output: str | dict, pattern: list | tuple, inputs: dict, category: str | None = None)`**: Creates a shaped recipe.

@@ -48,7 +48,11 @@ class Recipe:
         output, count = self.__get_count(output)
         self.__check_category(category, 0)
         self.__new_recipe_folder()
-        if len(inputs) > 9: raise ValueError("The maximum amount of inputs is 9")
+        if len(inputs) > 9: 
+            if self.verbose: 
+                logger.error(f"You can only put a max of 9 item in a recipe!")
+                logger.error(f"Raising ValueError...")
+            raise ValueError("The maximum amount of inputs is 9")
         data = {"type":"minecraft:crafting_shapeless", "category": category, "ingredients":inputs, "result":{"id":output, "count":count}}
         self._files[os.path.join(self.namespace, "recipe", f"{''.join(output.split(':')[-1])}.json")] = {"type":"json", "data":data}
     
