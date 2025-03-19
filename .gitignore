@@ -1,6 +1,7 @@
 __pycache__/
 generated_datapack/
 
+*.mcfunction
 *_test.py
 *.pyc
 *.zip
