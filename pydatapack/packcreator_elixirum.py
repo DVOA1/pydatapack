@@ -36,7 +36,7 @@ class Elixirum:
         self.dtpk._add_folders(os.path.join("elixirum","elixirum","configured_elixir"))
         self.dtpk._files[os.path.join("elixirum","elixirum","configured_elixir", f"{data['variants'][0][0]['essence'].removeprefix('elixirum:')}.json")] = {"type":"json", "data":data}
     
-    def __append_tag(self, tag: str, tag_type: str, id: str | list):
+    def __append_tag(self, tag: str, tag_type: str, id: str | list, replace: bool = False):
         # Append a tag
         if tag == "essence_whitelist":
             ids = id if isinstance(id, list) else [id]
@@ -44,25 +44,23 @@ class Elixirum:
             if self.dtpk.verbose: logger.warning(f"Whitelisted item is in blacklist! Removing {ids} from blacklist")
         
 
-        data = {"tag": tag, "type": tag_type, "id": id, "replace": False, "namespace":"elixirum"}
-        if self.dtpk.verbose: 
-            logger.info(f"Creating tag \"{tag}\" with type \"{tag_type}\" and id \"{id}\" {data}")
-            logger.debug(f"Data is equal to: {data}")
+        data = {"tag": tag, "type": tag_type, "id": id, "replace": replace, "namespace":"elixirum"}
+        if self.dtpk.verbose: logger.debug(f"Creating tag \"{tag}\" with type \"{tag_type}\" and id \"{id}\" {data}")
         self.dtpk.tags._all_tags.append(data)
 
-    def new_heat_source(self, block: str|list): 
+    def new_heat_source(self, block: str|list, replace: bool = False): 
         # Add a new heat source
-        self.__append_tag("heat_sources", "block", block)
+        self.__append_tag("heat_sources", "block", block, replace)
 
-    def add_to_blacklist(self, item: str|list): 
+    def add_to_blacklist(self, item: str|list, replace: bool = False): 
         # Add an item to the blacklist
-        self.__append_tag("essence_blacklist", "item", item)
+        self.__append_tag("essence_blacklist", "item", item, replace)
 
-    def add_to_whitelist(self, item: str|list): 
+    def add_to_whitelist(self, item: str|list, replace: bool = False): 
         # Add an item to the whitelist
-        self.__append_tag("essence_whitelist", "item", item)
+        self.__append_tag("essence_whitelist", "item", item, replace)
         
-    def make_shelf_placeable(self, item: str|list): 
+    def make_shelf_placeable(self, item: str|list, replace: bool = False): 
         # Make an item shelf placeable
-        self.__append_tag("shelf_placeable", "item", item)
+        self.__append_tag("shelf_placeable", "item", item, replace)
         

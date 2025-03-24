@@ -40,8 +40,7 @@ class Tags:
             if len(tags_id) > 0: 
                 if self.dtpk.verbose: 
                     namespace_info = f" in namespace {tag.get('namespace')}" if tag.get("namespace", None) is not None else ""
-                    logger.info(f"Adding tag \"{t}\" with ids {tags_id} and replace {any(replace)}{namespace_info}")
-                    logger.debug(f"Current tag is equal to {tag}")
+                    logger.debug(f"Adding tag \"{t}\" with ids {tags_id} and replace {any(replace)}{namespace_info}")
                 self.__add_tag(t, tag["type"], tags_id, any(replace), tag.get("namespace", None))
     
     def new_tag(self, tag: str, tag_type: str, id: str | list):
