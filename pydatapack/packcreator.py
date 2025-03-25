@@ -123,7 +123,9 @@ class Datapack:
         if self.verbose: logger.info("Generating new pack...")
         self.__make_dir(self.basepath)
         if self.verbose: logger.info("Basepath generated")
-        with open(os.path.join(self.basepath, "pack.mcmeta"), "w") as mcmeta: json.dump({"pack":{"description":self.desc,"pack_format":self.pack_format}, "filter":self.__filters}, mcmeta, indent=4)
+        with open(os.path.join(self.basepath, "pack.mcmeta"), "w") as mcmeta: 
+            if len(self.__filters) > 0: json.dump({"pack":{"description":self.desc,"pack_format":self.pack_format}, "filter":self.__filters}, mcmeta, indent=4)
+            else: json.dump({"pack":{"description":self.desc,"pack_format":self.pack_format}}, mcmeta, indent=4)
         if self.verbose: logger.info("MCMETA generated")
         self.__make_dir(self.datapath)
         if self.verbose: logger.info("Datapath generated")
@@ -173,28 +175,36 @@ class Datapack:
     def def_load(self, data: str|None = None):
         # Define load function
         if self.verbose: logger.info("Defining all paths to load function")
-        self._add_folders(os.path.join("minecraft","tags","functions"))
+
+        if self.pack_format >= 48: funct_folder = "function"
+        else: funct_folder = "functions"
+
+        self._add_folders(os.path.join("minecraft","tags",funct_folder))
 
         if self.verbose: logger.info("Minecraft namespace paths created")
-        self._add_folders(os.path.join(self.namespace, "functions"))
-        self._files[os.path.join("minecraft", "tags", "functions", "load.json")] = {"type":"json", "data":{"values":[f"{self.namespace}:load"]}}
+        self._add_folders(os.path.join(self.namespace, funct_folder))
+        self._files[os.path.join("minecraft", "tags", funct_folder, "load.json")] = {"type":"json", "data":{"values":[f"{self.namespace}:load"]}}
 
-        if data == None: self._files[os.path.join(self.namespace, "functions", "load.mcfunction")] = {"type":"text", "data":'tellraw @a {"text":"The '+self.name+' datapack has loaded correctly", "color":"green"}'}
-        else: self._files[os.path.join(self.namespace, "functions", "load.mcfunction")] = {"type":"text", "data":data}
+        if data == None: self._files[os.path.join(self.namespace, funct_folder, "load.mcfunction")] = {"type":"text", "data":'tellraw @a {"text":"The '+self.name+' datapack has loaded correctly", "color":"green"}'}
+        else: self._files[os.path.join(self.namespace, funct_folder, "load.mcfunction")] = {"type":"text", "data":data}
 
         if self.verbose: logger.info("All _files created")
 
     def def_tick(self, data: str|None = None):
         # Define tick function
         if self.verbose: logger.info("Defining all paths to tick function")
-        self._add_folders(os.path.join("minecraft","tags","functions"))
+
+        if self.pack_format >= 48: funct_folder = "function"
+        else: funct_folder = "functions"
+
+        self._add_folders(os.path.join("minecraft","tags",funct_folder))
 
         if self.verbose: logger.info("Minecraft namespace paths created")
-        self._add_folders(os.path.join(self.namespace, "functions"))
-        self._files[os.path.join("minecraft","tags","functions","tick.json")] = {"type":"json", "data":{"values":[f"{self.namespace}:tick"]}}
+        self._add_folders(os.path.join(self.namespace, funct_folder))
+        self._files[os.path.join("minecraft","tags",funct_folder,"tick.json")] = {"type":"json", "data":{"values":[f"{self.namespace}:tick"]}}
 
-        if data == None: self._files[os.path.join(self.namespace, "functions", "tick.mcfunction")] = {"type":"text", "data":'tellraw @a "Tick!"'}
-        else: self._files[os.path.join(self.namespace, "functions", "tick.mcfunction")] = {"type":"text", "data":data}
+        if data == None: self._files[os.path.join(self.namespace, funct_folder, "tick.mcfunction")] = {"type":"text", "data":'tellraw @a "Tick!"'}
+        else: self._files[os.path.join(self.namespace, funct_folder, "tick.mcfunction")] = {"type":"text", "data":data}
 
         if self.verbose: logger.info("All _files created")
 
@@ -202,9 +212,12 @@ class Datapack:
         # Define a new function
         if self.verbose: logger.info(f"Defining new \"{name}\" function")
 
-        if os.path.join(self.namespace, "functions") not in self.__folders: 
-            if self.verbose: logger.info(f"{self.namespace} namespace paths created")
-            self._add_folder(os.path.join(self.namespace, "functions"))
+        if self.pack_format >= 48: funct_folder = "function"
+        else: funct_folder = "functions"
 
-        if data == None: self._files[os.path.join(self.namespace, "functions", f"{name}.mcfunction")] = {"type":"text", "data":'tellraw @a {"text":"This function has no data inside", "color":"red"}'}
-        else: self._files[os.path.join(self.namespace, "functions", f"{name}.mcfunction")] = {"type":"text", "data":data}
+        if os.path.join(self.namespace, funct_folder) not in self.__folders: 
+            if self.verbose: logger.info(f"{self.namespace} namespace paths created")
+            self._add_folder(os.path.join(self.namespace, funct_folder))
+
+        if data == None: self._files[os.path.join(self.namespace, funct_folder, f"{name}.mcfunction")] = {"type":"text", "data":'tellraw @a {"text":"This function has no data inside", "color":"red"}'}
+        else: self._files[os.path.join(self.namespace, funct_folder, f"{name}.mcfunction")] = {"type":"text", "data":data}
