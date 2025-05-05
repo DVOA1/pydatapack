@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+import re
 
 from pydatapack.log_formatter import ColorFormatter
 from shutil import make_archive
@@ -172,6 +173,27 @@ class Datapack:
 
         if self.verbose: logger.info("End of save")
     
+    def get_ids_from_pattern(self, pattern: str):
+        
+        """
+        Recursively expand the first parenthesized group of alternatives
+        in the pattern, until no more are left.
+        """
+        m = re.search(r'\(([^()]+)\)', pattern)
+        if not m:
+            return [pattern]
+        
+        variants = []
+        whole_group = m.group(0)
+        inner = m.group(1)
+        options = inner.split('|')
+        
+        for opt in options:
+            new_pattern = pattern[:m.start()] + opt + pattern[m.end():]
+            variants.extend(self.get_ids_from_pattern(new_pattern))
+        
+        return variants
+
     def def_load(self, data: str|None = None):
         # Define load function
         if self.verbose: logger.info("Defining all paths to load function")
